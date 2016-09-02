@@ -36,6 +36,7 @@ module.exports = function GeoJSONStream (osm, bbox, opts) {
       })
       next(null, rewind({
         type: 'Feature',
+        id: row.id,
         geometry: geometry,
         properties: xtend(row.tags || {}, metadata)
       }))

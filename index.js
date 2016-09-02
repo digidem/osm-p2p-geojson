@@ -4,6 +4,7 @@ var through = require('through2')
 var once = require('once')
 var readonly = require('read-only-stream')
 var rewind = require('geojson-rewind')
+var collect = require('collect-stream')
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -13,7 +14,11 @@ var DEFAULTS = {
   metadata: ['id', 'version', 'timestamp']
 }
 
-module.exports = function GeoJSONStream (osm, bbox, opts) {
+module.exports = function getGeoJSON (osm, bbox, opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = null
+  }
   opts = xtend(DEFAULTS, opts)
   if (!opts.metadata) opts.metadata = []
   if (!Array.isArray(opts.metadata)) throw new Error('metadata option must be an array')
@@ -24,7 +29,14 @@ module.exports = function GeoJSONStream (osm, bbox, opts) {
     FCStream()
   )
 
-  return readonly(stream)
+  if (cb) {
+    collect(stream, function (err, data) {
+      if (err) return cb(err)
+      cb(null, JSON.parse(data.toString()))
+    })
+  } else {
+    return readonly(stream)
+  }
 
   function write (row, enc, next) {
     geom(osm, row, function (err, geometry) {

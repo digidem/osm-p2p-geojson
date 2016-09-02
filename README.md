@@ -19,10 +19,15 @@ npm install osm-p2p-geojson
 ## Usage
 
 ```js
-var GeoJSONStream = require('osm-p2p-geojson')
-var stream = GeoJSONStream(osm, [-Infinity, -Infinity, Infinity, Infinity])
+var getGeoJSON = require('osm-p2p-geojson')
+var q = [[-Infinity, Infinity], [-Infinity, Infinity]]
+var stream = getGeoJSON(osm, q)
 stream.pipe(process.stdout)
 // pipes GeoJSON to stdout...
+getGeoJSON(osm, q, function (err, geojson) {
+  console.log(geojson)
+  // outputs geojson object
+})
 ```
 
 ## API

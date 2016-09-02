@@ -9,7 +9,7 @@ var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
 var concat = require('concat-stream')
 
-var GeoJSONStream = require('./')
+var getGeoJSON = require('./')
 var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
 
 function db () {
@@ -67,11 +67,11 @@ test('node', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    GeoJSONStream(osm, B).pipe(concat(function (result) {
-      var geojson = JSON.parse(result.toString())
+    getGeoJSON(osm, B, function (err, geojson) {
+      t.error(err)
       t.deepEqual(geojson, expected)
       t.end()
-    }))
+    })
   })
 })
 

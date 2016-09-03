@@ -14,7 +14,17 @@ var DEFAULTS = {
   metadata: ['id', 'version', 'timestamp']
 }
 
-module.exports = function getGeoJSON (osm, bbox, opts, cb) {
+module.exports = getGeoJSON
+
+module.exports.obj = function (osm, bbox, opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = null
+  }
+  getGeoJSON(osm, bbox, xtend({objectMode: true, highWaterMark: 16}, opts), cb)
+}
+
+function getGeoJSON (osm, bbox, opts, cb) {
   if (typeof opts === 'function') {
     cb = opts
     opts = null
@@ -23,16 +33,22 @@ module.exports = function getGeoJSON (osm, bbox, opts, cb) {
   if (!opts.metadata) opts.metadata = []
   if (!Array.isArray(opts.metadata)) throw new Error('metadata option must be an array')
 
-  var stream = pumpify(
-    osm.queryStream(bbox),
-    through.obj(write),
-    FCStream()
-  )
+  var pipeline = [osm.queryStream(bbox), through.obj(write)]
+  var stream
+
+  if (!opts.objectMode && !cb) {
+    stream = pumpify(pipeline.concat(FCStream()))
+  } else {
+    stream = pumpify.obj(pipeline)
+  }
 
   if (cb) {
-    collect(stream, function (err, data) {
+    collect(stream, function (err, features) {
       if (err) return cb(err)
-      cb(null, JSON.parse(data.toString()))
+      cb(null, {
+        type: 'FeatureCollection',
+        features: features
+      })
     })
   } else {
     return readonly(stream)

@@ -28,7 +28,9 @@ function json2batch (e) {
     key: e.id,
     value: e
   }
+  e.refs = e.nodes
   delete e.id
+  delete e.nodes
   return op
 }
 
@@ -75,125 +77,134 @@ test('node', function (t) {
   })
 })
 
-// test.skip('way', function (t) {
-//   t.plan(1)
-//   var json, geojson
-//   batch = [
-//     {
-//       type: 'way',
-//       id: 1,
-//       nodes: [2, 3, 4]
-//     },
-//     {
-//       type: 'node',
-//       id: 2,
-//       lat: 0.0,
-//       lon: 1.0
-//     },
-//     {
-//       type: 'node',
-//       id: 3,
-//       lat: 0.0,
-//       lon: 1.1
-//     },
-//     {
-//       type: 'node',
-//       id: 4,
-//       lat: 0.1,
-//       lon: 1.2
-//     }
-//   ]
-//   geojson = {
-//     type: 'FeatureCollection',
-//     features: [
-//       {
-//         type: 'Feature',
-//         id: 'way/1',
-//         properties: {
-//           type: 'way',
-//           id: 1,
-//           tags: {},
-//           relations: [],
-//           meta: {}
-//         },
-//         geometry: {
-//           type: 'LineString',
-//           coordinates: [
-//             [1.0, 0.0],
-//             [1.1, 0.0],
-//             [1.2, 0.1]
-//           ]
-//         }
-//       }
-//     ]
-//   }
-//   var result = osmtogeojson.toGeojson(json)
-//   t.deepEqual(result, geojson)
-// })
-// test.skip('polygon', function (t) {
-//   t.plan(1)
-//   var json, geojson
-//   batch = [
-//       {
-//         type: 'way',
-//         id: 1,
-//         nodes: [2, 3, 4, 5, 2],
-//         tags: {area: 'yes'}
-//       },
-//       {
-//         type: 'node',
-//         id: 2,
-//         lat: 0.0,
-//         lon: 0.0
-//       },
-//       {
-//         type: 'node',
-//         id: 3,
-//         lat: 0.0,
-//         lon: 1.0
-//       },
-//       {
-//         type: 'node',
-//         id: 4,
-//         lat: 1.0,
-//         lon: 1.0
-//       },
-//       {
-//         type: 'node',
-//         id: 5,
-//         lat: 1.0,
-//         lon: 0.0
-//       }
-//     ]
-//   geojson = {
-//     type: 'FeatureCollection',
-//     features: [
-//       {
-//         type: 'Feature',
-//         id: 'way/1',
-//         properties: {
-//           type: 'way',
-//           id: 1,
-//           tags: {area: 'yes'},
-//           relations: [],
-//           meta: {}
-//         },
-//         geometry: {
-//           type: 'Polygon',
-//           coordinates: [[
-//             [0.0, 0.0],
-//             [1.0, 0.0],
-//             [1.0, 1.0],
-//             [0.0, 1.0],
-//             [0.0, 0.0]
-//           ]]
-//         }
-//       }
-//     ]
-//   }
-//   var result = osmtogeojson.toGeojson(json)
-//   t.deepEqual(result, geojson)
-// })
+test('way', function (t) {
+  var batch = [
+    {
+      type: 'way',
+      id: 'A',
+      tags: {
+        interesting: 'this is'
+      },
+      nodes: ['B', 'C', 'D']
+    },
+    {
+      type: 'node',
+      id: 'B',
+      lat: 0.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'C',
+      lat: 0.0,
+      lon: 1.1
+    },
+    {
+      type: 'node',
+      id: 'D',
+      lat: 0.1,
+      lon: 1.2
+    }
+  ].map(json2batch)
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: 'A',
+        properties: {
+          id: 'A',
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [1.0, 0.0],
+            [1.1, 0.0],
+            [1.2, 0.1]
+          ]
+        }
+      }
+    ]
+  }
+  var osm = db()
+  osm.batch(batch, function (err, docs) {
+    t.error(err)
+    expected.features[0].properties.version = docs[0].key
+    getGeoJSON(osm, B, function (err, geojson) {
+      t.error(err)
+      t.deepEqual(geojson, expected)
+      t.end()
+    })
+  })
+})
+test('polygon', function (t) {
+  var batch = [
+    {
+      type: 'way',
+      id: 'A',
+      nodes: ['B', 'C', 'D', 'E', 'B'],
+      tags: {area: 'yes'}
+    },
+    {
+      type: 'node',
+      id: 'B',
+      lat: 0.0,
+      lon: 0.0
+    },
+    {
+      type: 'node',
+      id: 'C',
+      lat: 0.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'D',
+      lat: 1.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'E',
+      lat: 1.0,
+      lon: 0.0
+    }
+  ].map(json2batch)
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: 'A',
+        properties: {
+          id: 'A',
+          area: 'yes',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
+            [0.0, 0.0]
+          ]]
+        }
+      }
+    ]
+  }
+  var osm = db()
+  osm.batch(batch, function (err, docs) {
+    t.error(err)
+    expected.features[0].properties.version = docs[0].key
+    getGeoJSON(osm, B, function (err, geojson) {
+      t.error(err)
+      t.deepEqual(geojson, expected)
+      t.end()
+    })
+  })
+})
 // test.skip('simple multipolygon', function (t) {
 //   t.plan(1)
 //   var json, geojson

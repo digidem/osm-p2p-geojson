@@ -60,7 +60,7 @@ function getGeoJSON (osm, bbox, opts, cb) {
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
       var metadata = {}
       opts.metadata.forEach(function (key) {
-        metadata[key] = row[key]
+        if (row[key]) metadata[key] = row[key]
       })
       next(null, rewind({
         type: 'Feature',

@@ -1,6 +1,6 @@
 {
   "name": "osm-p2p-geojson",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Export GeoJSON from osm-p2p-db",
   "main": "index.js",
   "scripts": {

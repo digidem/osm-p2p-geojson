@@ -11,20 +11,21 @@ var isPolygon = require('./lib/is_polygon_feature')
 var hasInterestingTags = require('./lib/has_interesting_tags')
 
 var DEFAULTS = {
-  metadata: ['id', 'version', 'timestamp']
+  metadata: ['id', 'version', 'timestamp'],
+  bbox: [-Infinity, -Infinity, Infinity, Infinity]
 }
 
 module.exports = getGeoJSON
 
-module.exports.obj = function (osm, bbox, opts, cb) {
+module.exports.obj = function (osm, opts, cb) {
   if (typeof opts === 'function') {
     cb = opts
     opts = null
   }
-  getGeoJSON(osm, bbox, xtend({objectMode: true, highWaterMark: 16}, opts), cb)
+  getGeoJSON(osm, xtend({objectMode: true, highWaterMark: 16}, opts), cb)
 }
 
-function getGeoJSON (osm, bbox, opts, cb) {
+function getGeoJSON (osm, opts, cb) {
   if (typeof opts === 'function') {
     cb = opts
     opts = null
@@ -33,7 +34,8 @@ function getGeoJSON (osm, bbox, opts, cb) {
   if (!opts.metadata) opts.metadata = []
   if (!Array.isArray(opts.metadata)) throw new Error('metadata option must be an array')
 
-  var pipeline = [osm.queryStream(bbox), through.obj(write)]
+  var q = [[opts.bbox[0], opts.bbox[2]], [opts.bbox[1], opts.bbox[3]]]
+  var pipeline = [osm.queryStream(q), through.obj(write)]
   var stream
 
   if (!opts.objectMode && !cb) {

@@ -34,8 +34,6 @@ function json2batch (e) {
   return op
 }
 
-var B = [[-Infinity, Infinity], [-Infinity, Infinity]]
-
 test('node', function (t) {
   var batch = [
     {
@@ -69,7 +67,7 @@ test('node', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, B, function (err, geojson) {
+    getGeoJSON(osm, function (err, geojson) {
       t.error(err)
       t.deepEqual(geojson, expected)
       t.end()
@@ -131,7 +129,7 @@ test('way', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, B, function (err, geojson) {
+    getGeoJSON(osm, function (err, geojson) {
       t.error(err)
       t.deepEqual(geojson, expected)
       t.end()
@@ -198,7 +196,7 @@ test('polygon', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, B, function (err, geojson) {
+    getGeoJSON(osm, function (err, geojson) {
       t.error(err)
       t.deepEqual(geojson, expected)
       t.end()

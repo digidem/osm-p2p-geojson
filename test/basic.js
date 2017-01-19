@@ -9,7 +9,7 @@ var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
 var collect = require('collect-stream')
 
-var getGeoJSON = require('./')
+var getGeoJSON = require('../')
 var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
 
 function db () {

@@ -4,7 +4,7 @@
   "description": "Export GeoJSON from osm-p2p-db",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape test/*.js"
   },
   "keywords": [
     "osm",

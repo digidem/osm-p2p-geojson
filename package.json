@@ -23,7 +23,8 @@
     "osm-p2p-db": "^3.9.3",
     "rimraf": "^2.6.1",
     "standard": "^8.0.0",
-    "tape": "^4.6.0"
+    "tape": "^4.6.0",
+    "traverse": "^0.6.6"
   },
   "dependencies": {
     "JSONStream": "^1.1.4",

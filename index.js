@@ -95,11 +95,18 @@ function geom (osm, doc, cb) {
     })
   } else if (doc.type === 'relation') {
     expandMembers(osm, doc.members || [], function (err, geoms) {
-      // TODO: Relations need to be processed as MultiPolygons / MultiLineStrings / MultiPoints
-      cb(err, {
-        type: 'GeometryCollection',
-        geometries: geoms
-      })
+      var types = geometriesByType(geoms)
+      if (Object.keys(types).length > 1) {
+        // Heterogeneous data; use a GeometryCollection
+        cb(err, {
+          type: 'GeometryCollection',
+          geometries: geoms
+        })
+      } else if (Object.keys(types)[0] === 'LineString') {
+        cb(err, mergeViableLineStrings(geoms))
+      } else {
+        cb(new Error('unknown type; should not happen'))
+      }
     })
   } else cb(null, undefined)
 }
@@ -162,4 +169,108 @@ function cmpFork (a, b) {
   }
   // Ensure sorting is stable between requests
   return a.version < b.version ? -1 : 1
+}
+
+// [GeoJson] -> {String: [GeoJson]}
+function geometriesByType (geoms) {
+  var types = {}
+  geoms.forEach(function (geom) {
+    if (!types[geom.type]) {
+      types[geom.type] = []
+    }
+    types[geom.type].push(geom)
+  })
+  return types
+}
+
+// Coordinate ([Number, Number]) -> CoordId (String)
+function coordId (coord) {
+  return coord[0].toString() + ',' + coord[1].toString()
+}
+
+// LineString, LineString -> LineString
+function mergeLineStrings (a, b) {
+  // TODO: assert that a is the head that leads into b
+
+  return {
+    type: 'LineString',
+    coordinates: a.coordinates.concat(b.coordinates.slice(1))
+  }
+}
+
+// Merges all connected (non-forking, non-junctioning) line strings into single
+// line strings.
+// [LineString] -> GeoJson
+function mergeViableLineStrings (geoms) {
+  // TODO: assert all are linestrings
+
+  var lineStrings = geoms.slice()
+  var result = []
+
+  while (lineStrings.length > 0) {
+    var ls = lineStrings.shift()
+
+    var didMerge = false
+
+    // Look for exactly ONE other LineString whose tail matches our head, and
+    // merge.
+    var headId = coordId(ls.coordinates[0])
+    var matches = partition(lineStrings, function (geom) {
+      return coordId(geom.coordinates[geom.coordinates.length - 1]) === headId
+    })
+    var tailMatches = matches[0]
+    lineStrings = matches[1]
+    if (tailMatches.length === 1) {
+      ls = mergeLineStrings(tailMatches[0], ls)
+      didMerge = true
+    } else if (tailMatches.length > 1) {
+      throw new Error('junction/fork scenario; unimplemented')
+    }
+
+    // Look for exactly ONE other LineString whose head matches our tail, and
+    // merge.
+    var tailId = coordId(ls.coordinates[ls.coordinates.length - 1])
+    matches = partition(lineStrings, function (geom) {
+      return coordId(geom.coordinates[0]) === tailId
+    })
+    var headMatches = matches[0]
+    lineStrings = matches[1]
+    if (headMatches.length === 1) {
+      ls = mergeLineStrings(ls, headMatches[0])
+      didMerge = true
+    } else if (headMatches.length > 1) {
+      throw new Error('junction/fork scenario; unimplemented')
+    }
+
+    // Re-insert the LineString if a merge occurred
+    if (didMerge) {
+      lineStrings.push(ls)
+    } else {
+      result.push(ls)
+    }
+  }
+
+  if (result.length === 1) {
+    result = result[0]
+  } else {
+    result = {
+      type: 'MultiLineString',
+      coordinates: result.map(function (ls) { return ls.coordinates })
+    }
+  }
+
+  return result
+}
+
+// [a], (a -> Bool) -> [[a], [a]]
+function partition (lst, fn) {
+  var result = [[], []]
+  for (var i = 0; i < lst.length; i++) {
+    if (fn(lst[i])) {
+      result[0].push(lst[i])
+    } else {
+      result[1].push(lst[i])
+    }
+  }
+  return result
 }

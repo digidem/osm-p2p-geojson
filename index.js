@@ -266,4 +266,3 @@ function geometriesByType (geoms) {
   })
   return types
 }
-

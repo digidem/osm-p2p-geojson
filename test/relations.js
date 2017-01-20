@@ -982,4 +982,3 @@ test('two connected ways (diamond shape) -> Polygon', function (t) {
     t.end()
   })
 })
-

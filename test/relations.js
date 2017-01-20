@@ -282,3 +282,95 @@ test('merge two connected ways into one -- opposite dir', function (t) {
     t.end()
   })
 })
+
+test('merge three connected ways into one', function (t) {
+  var data = [
+    {
+      type: 'node',
+      id: '1',
+      lat: 0,
+      lon: 0
+    },
+    {
+      type: 'node',
+      id: '2',
+      lat: 1,
+      lon: 1
+    },
+    {
+      type: 'node',
+      id: '3',
+      lat: 2,
+      lon: 2
+    },
+    {
+      type: 'node',
+      id: '4',
+      lat: 3,
+      lon: 3
+    },
+    {
+      type: 'way',
+      id: '5',
+      nodes: [ '2', '3' ]
+    },
+    {
+      type: 'way',
+      id: '6',
+      nodes: [ '3', '4' ]
+    },
+    {
+      type: 'way',
+      id: '7',
+      nodes: [ '1', '2' ]
+    },
+    {
+      type: 'relation',
+      id: '8',
+      tags: {
+        interesting: 'this is'
+      },
+      members: [
+        {
+          type: 'way',
+          ref: '5'
+        },
+        {
+          type: 'way',
+          ref: '6'
+        },
+        {
+          type: 'way',
+          ref: '7'
+        }
+      ]
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [0.0, 0.0],
+            [1.0, 1.0],
+            [2.0, 2.0],
+            [3.0, 3.0],
+          ]
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})

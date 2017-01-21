@@ -461,3 +461,122 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
     t.end()
   })
 })
+
+test('four ways -> MultiLineString /w two LineStrings', function (t) {
+  var data = [
+    {
+      type: 'node',
+      id: '1',
+      lat: 0,
+      lon: 0
+    },
+    {
+      type: 'node',
+      id: '2',
+      lat: 1,
+      lon: 1
+    },
+    {
+      type: 'node',
+      id: '3',
+      lat: 2,
+      lon: 2
+    },
+    {
+      type: 'node',
+      id: '4',
+      lat: 3,
+      lon: 3
+    },
+    {
+      type: 'node',
+      id: '5',
+      lat: 4,
+      lon: 4
+    },
+    {
+      type: 'node',
+      id: '6',
+      lat: 5,
+      lon: 5
+    },
+    {
+      type: 'way',
+      id: '7',
+      nodes: [ '1', '2' ]
+    },
+    {
+      type: 'way',
+      id: '8',
+      nodes: [ '2', '3' ]
+    },
+    {
+      type: 'way',
+      id: '9',
+      nodes: [ '4', '5' ]
+    },
+    {
+      type: 'way',
+      id: '10',
+      nodes: [ '5', '6' ]
+    },
+    {
+      type: 'relation',
+      id: '11',
+      tags: {
+        interesting: 'this is'
+      },
+      members: [
+        {
+          type: 'way',
+          ref: '7'
+        },
+        {
+          type: 'way',
+          ref: '8'
+        },
+        {
+          type: 'way',
+          ref: '9'
+        },
+        {
+          type: 'way',
+          ref: '10'
+        }
+      ]
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'MultiLineString',
+          coordinates: [
+            [
+              [0.0, 0.0],
+              [1.0, 1.0],
+              [2.0, 2.0]
+            ],
+            [
+              [3.0, 3.0],
+              [4.0, 4.0],
+              [5.0, 5.0]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})

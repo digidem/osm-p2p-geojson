@@ -92,15 +92,17 @@ function geom (osm, doc, cb) {
     })
   } else if (doc.type === 'relation') {
     expandMembers(osm, doc.members || [], function (err, geoms) {
+      if (err) return cb(err)
+
       var types = geometriesByType(geoms)
       if (Object.keys(types).length > 1) {
         // Heterogeneous data; use a GeometryCollection
-        cb(err, {
+        cb(null, {
           type: 'GeometryCollection',
           geometries: geoms
         })
       } else if (Object.keys(types)[0] === 'LineString') {
-        cb(err, mergeViableLineStrings(geoms))
+        cb(null, mergeViableLineStrings(geoms))
       } else {
         cb(new Error('unknown type; should not happen'))
       }

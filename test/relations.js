@@ -580,3 +580,75 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
     t.end()
   })
 })
+
+test('many long ways -> LineString', function (t) {
+
+  var _id = 1
+  function id () {
+    return '' + (_id++)
+  }
+
+  // 500 nodes
+  var nodes = (new Array(500)).fill(0).map(function (_, idx) {
+    return {
+      type: 'node',
+      id: id(),
+      lat: idx,
+      lon: idx
+    }
+  })
+
+  // 10 ways, each mapping to 50 nodes, plus the predecessor of the last way
+  var ways = (new Array(10)).fill(0).map(function (_, idx) {
+    return {
+      type: 'way',
+      id: id(),
+      nodes: (new Array(51)).fill(0).map(function (_, jdx) {
+        return '' + (jdx + idx * 50)
+      })
+    }
+  })
+
+  // 1 relation containing it all
+  var relation = {
+    type: 'relation',
+    id: id(),
+    tags: {
+      interesting: 'this is'
+    },
+    members: ways.map(function (way) {
+      return {
+        type: 'way',
+        ref: way.id
+      }
+    })
+  }
+
+  // glom it all into a single data array
+  var data = nodes.concat(ways).concat([relation])
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: nodes.map(function (node) {
+            return [node.lat, node.lon]
+          })
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})
+

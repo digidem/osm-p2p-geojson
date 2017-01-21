@@ -43,7 +43,7 @@ function writeOsmToDb (data, done) {
   })
 }
 
-// [OsmObject] -> Error, JSON <Async>
+// [OsmObject] -> Error, GeoJSON <Async>
 function osmDataToGeoJson (data, done) {
   var batch = data.map(json2batch)
 
@@ -59,7 +59,7 @@ function osmDataToGeoJson (data, done) {
   })
 }
 
-// String, JSON -> JSON <Mutate>
+// String, GeoJSON -> GeoJSON <Mutate>
 function clearProperty (property, geojson) {
   var copy = traverse(geojson).clone()
   traverse(copy)
@@ -71,7 +71,7 @@ function clearProperty (property, geojson) {
   return copy
 }
 
-test('single way -- no merge', function (t) {
+test('single way -> LineString', function (t) {
   var data = [
     {
       type: 'node',
@@ -131,7 +131,7 @@ test('single way -- no merge', function (t) {
   })
 })
 
-test('merge two connected ways into one', function (t) {
+test('two connected ways -> LineString', function (t) {
   var data = [
     {
       type: 'node',
@@ -207,7 +207,7 @@ test('merge two connected ways into one', function (t) {
   })
 })
 
-test('merge two connected ways into one -- opposite dir', function (t) {
+test('two connected ways -> LineString (opposite order)', function (t) {
   var data = [
     {
       type: 'node',
@@ -283,7 +283,7 @@ test('merge two connected ways into one -- opposite dir', function (t) {
   })
 })
 
-test('merge three connected ways into one', function (t) {
+test('three connected ways -> LineString', function (t) {
   var data = [
     {
       type: 'node',
@@ -375,7 +375,7 @@ test('merge three connected ways into one', function (t) {
   })
 })
 
-test('two unconnected ways -> MultiLineString', function (t) {
+test('two ways -> MultiLineString /w two LineStrings', function (t) {
   var data = [
     {
       type: 'node',

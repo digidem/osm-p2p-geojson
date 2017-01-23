@@ -283,6 +283,158 @@ test('two connected ways -> LineString (opposite order)', function (t) {
   })
 })
 
+test('two connected ways /w heads touching -> LineString', function (t) {
+  var data = [
+    {
+      type: 'node',
+      id: '1',
+      lat: 0,
+      lon: 0
+    },
+    {
+      type: 'node',
+      id: '2',
+      lat: 1,
+      lon: 1
+    },
+    {
+      type: 'node',
+      id: '3',
+      lat: 2,
+      lon: 2
+    },
+    {
+      type: 'way',
+      id: '4',
+      nodes: [ '1', '2' ]
+    },
+    {
+      type: 'way',
+      id: '5',
+      nodes: [ '1', '3' ]
+    },
+    {
+      type: 'relation',
+      id: '6',
+      tags: {
+        interesting: 'this is'
+      },
+      members: [
+        {
+          type: 'way',
+          ref: '4'
+        },
+        {
+          type: 'way',
+          ref: '5'
+        }
+      ]
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [1.0, 1.0],
+            [0.0, 0.0],
+            [2.0, 2.0]
+          ]
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})
+
+test('two connected ways /w tails touching -> LineString', function (t) {
+  var data = [
+    {
+      type: 'node',
+      id: '1',
+      lat: 0,
+      lon: 0
+    },
+    {
+      type: 'node',
+      id: '2',
+      lat: 1,
+      lon: 1
+    },
+    {
+      type: 'node',
+      id: '3',
+      lat: 2,
+      lon: 2
+    },
+    {
+      type: 'way',
+      id: '4',
+      nodes: [ '1', '2' ]
+    },
+    {
+      type: 'way',
+      id: '5',
+      nodes: [ '3', '2' ]
+    },
+    {
+      type: 'relation',
+      id: '6',
+      tags: {
+        interesting: 'this is'
+      },
+      members: [
+        {
+          type: 'way',
+          ref: '4'
+        },
+        {
+          type: 'way',
+          ref: '5'
+        }
+      ]
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is',
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [0.0, 0.0],
+            [1.0, 1.0],
+            [2.0, 2.0],
+          ]
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})
+
 test('three connected ways -> LineString', function (t) {
   var data = [
     {

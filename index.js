@@ -189,64 +189,58 @@ function coordId (coord) {
 
 // LineString, LineString -> LineString
 function mergeLineStrings (a, b) {
-  // TODO: assert that a is the head that leads into b
+  var s1 = coordId(a.coordinates[0])
+  var e1 = coordId(a.coordinates[a.coordinates.length - 1])
+  var s2 = coordId(b.coordinates[0])
+  var e2 = coordId(b.coordinates[b.coordinates.length - 1])
+
+  // TODO: handle case where more than one of these is true!
+
+  var coords
+  if (s1 === e2) {
+    coords = b.coordinates.concat(a.coordinates.slice(1))
+  } else if (s2 === e1) {
+    coords = a.coordinates.concat(b.coordinates.slice(1))
+  } else if (s1 === s2) {
+    coords = a.coordinates.slice(1).reverse().concat(b.coordinates)
+  } else if (e1 === e2) {
+    coords = a.coordinates.concat(b.coordinates.reverse().slice(1))
+  } else {
+    return null
+  }
 
   return {
     type: 'LineString',
-    coordinates: a.coordinates.concat(b.coordinates.slice(1))
+    coordinates: coords
   }
 }
 
 // Merges all connected (non-forking, non-junctioning) line strings into single
 // line strings.
-// [LineString] -> GeoJson
+// [LineString] -> LineString|MultiLineString
 function mergeViableLineStrings (geoms) {
   // TODO: assert all are linestrings
 
   var lineStrings = geoms.slice()
   var result = []
-
   while (lineStrings.length > 0) {
     var ls = lineStrings.shift()
 
-    var didMerge = false
+    // Attempt to merge this LineString with the other LineStrings, updating
+    // the reference as it is merged with others and grows.
+    lineStrings = lineStrings.reduce(function (accum, cur) {
+      var merged = mergeLineStrings(ls, cur)
+      if (merged) {
+        // Accumulate the merged LineString
+        ls = merged
+      } else {
+        // Put the unmerged LineString back into the list
+        accum.push(cur)
+      }
+      return accum
+    }, [])
 
-    // Look for exactly ONE other LineString whose tail matches our head, and
-    // merge.
-    var headId = coordId(ls.coordinates[0])
-    var matches = partition(lineStrings, function (geom) {
-      return coordId(geom.coordinates[geom.coordinates.length - 1]) === headId
-    })
-    var tailMatches = matches[0]
-    lineStrings = matches[1]
-    if (tailMatches.length === 1) {
-      ls = mergeLineStrings(tailMatches[0], ls)
-      didMerge = true
-    } else if (tailMatches.length > 1) {
-      throw new Error('junction/fork scenario; unimplemented')
-    }
-
-    // Look for exactly ONE other LineString whose head matches our tail, and
-    // merge.
-    var tailId = coordId(ls.coordinates[ls.coordinates.length - 1])
-    matches = partition(lineStrings, function (geom) {
-      return coordId(geom.coordinates[0]) === tailId
-    })
-    var headMatches = matches[0]
-    lineStrings = matches[1]
-    if (headMatches.length === 1) {
-      ls = mergeLineStrings(ls, headMatches[0])
-      didMerge = true
-    } else if (headMatches.length > 1) {
-      throw new Error('junction/fork scenario; unimplemented')
-    }
-
-    // Re-insert the LineString if a merge occurred
-    if (didMerge) {
-      lineStrings.push(ls)
-    } else {
-      result.push(ls)
-    }
+    result.push(ls)
   }
 
   if (result.length === 1) {
@@ -257,19 +251,6 @@ function mergeViableLineStrings (geoms) {
       coordinates: result.map(function (ls) { return ls.coordinates })
     }
   }
-
   return result
 }
 
-// [a], (a -> Bool) -> [[a], [a]]
-function partition (lst, fn) {
-  var result = [[], []]
-  for (var i = 0; i < lst.length; i++) {
-    if (fn(lst[i])) {
-      result[0].push(lst[i])
-    } else {
-      result[1].push(lst[i])
-    }
-  }
-  return result
-}

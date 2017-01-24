@@ -4,7 +4,7 @@
   "description": "Export GeoJSON from osm-p2p-db",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "tape 'test/**/*.js'"
   },
   "keywords": [
     "osm",
@@ -39,7 +39,6 @@
     "read-only-stream": "^2.0.0",
     "through2": "^2.0.1",
     "topojson": "^2.2.0",
-    "topojson-client": "^2.1.0",
     "xtend": "^4.0.1"
   },
   "repository": {

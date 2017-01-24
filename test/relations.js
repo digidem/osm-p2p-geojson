@@ -59,7 +59,7 @@ function osmDataToGeoJson (data, done) {
   })
 }
 
-// String, GeoJSON -> GeoJSON <Mutate>
+// String, GeoJSON -> GeoJSON
 function clearProperty (property, geojson) {
   var copy = traverse(geojson).clone()
   traverse(copy)

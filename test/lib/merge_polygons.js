@@ -1,5 +1,6 @@
 var test = require('tape')
-var merge = require('../../lib/merge_polygons.js')
+var merge = require('../../lib/merge_polygons')
+var polygonsEqual = require('../../lib/polygons_equal')
 
 test('1 polygon; no merge', function (t) {
   var poly = {
@@ -17,7 +18,7 @@ test('1 polygon; no merge', function (t) {
 
   var result = merge([poly])
 
-  t.deepEqual(poly, result)
+  t.ok(polygonsEqual(result, poly))
   t.end()
 })
 
@@ -55,7 +56,7 @@ test('2 polygons; no merge', function (t) {
 
   var result = merge([poly1, poly2])
 
-  t.deepEqual(result, expected)
+  t.ok(polygonsEqual(result, expected))
   t.end()
 })
 
@@ -103,6 +104,6 @@ test('2 polygons; merge', function (t) {
 
   var result = merge([poly1, poly2])
 
-  t.deepEqual(result, expected)
+  t.ok(polygonsEqual(result, expected))
   t.end()
 })

@@ -821,7 +821,6 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
 })
 
 test('many long ways -> LineString', function (t) {
-
   var _id = 1
   function id () {
     return '' + (_id++)

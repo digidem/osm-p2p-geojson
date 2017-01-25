@@ -16,9 +16,9 @@ test('1 polygon; no merge', function (t) {
     ]
   }
 
-  var result = merge([poly])
+  t.ok(polygonsEqual(merge([poly], { impl: 'turf' }), poly))
+  t.ok(polygonsEqual(merge([poly], { impl: 'topojson' }), poly))
 
-  t.ok(polygonsEqual(result, poly))
   t.end()
 })
 
@@ -54,9 +54,9 @@ test('2 polygons; no merge', function (t) {
     coordinates: [poly1.coordinates, poly2.coordinates]
   }
 
-  var result = merge([poly1, poly2])
+  t.ok(polygonsEqual(merge([poly1, poly2], { impl: 'turf' }), expected))
+  t.ok(polygonsEqual(merge([poly1, poly2], { impl: 'topojson' }), expected))
 
-  t.ok(polygonsEqual(result, expected))
   t.end()
 })
 
@@ -102,8 +102,9 @@ test('2 polygons; merge', function (t) {
     ]
   }
 
-  var result = merge([poly1, poly2])
+  t.ok(polygonsEqual(merge([poly1, poly2], { impl: 'turf' }), expected))
+  t.ok(polygonsEqual(merge([poly1, poly2], { impl: 'topojson' }), expected))
 
-  t.ok(polygonsEqual(result, expected))
   t.end()
 })
+

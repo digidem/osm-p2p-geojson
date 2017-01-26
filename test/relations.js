@@ -890,3 +890,95 @@ test('many long ways -> LineString', function (t) {
   })
 })
 
+test('two connected ways (diamond shape) -> Polygon', function (t) {
+  var data = [
+    {
+      type: 'node',
+      id: '1',
+      lat: 0,
+      lon: 0
+    },
+    {
+      type: 'node',
+      id: '2',
+      lat: 1,
+      lon: 1
+    },
+    {
+      type: 'node',
+      id: '3',
+      lat: 1,
+      lon: -1
+    },
+    {
+      type: 'node',
+      id: '4',
+      lat: 2,
+      lon: 0
+    },
+    {
+      type: 'way',
+      id: '5',
+      tags: {
+        area: 'yes'
+      },
+      nodes: [ '1', '2', '3', '1' ]
+    },
+    {
+      type: 'way',
+      id: '6',
+      tags: {
+        area: 'yes'
+      },
+      nodes: [ '2', '3', '4', '2' ]
+    },
+    {
+      type: 'relation',
+      id: '7',
+      tags: {
+        interesting: 'this is'
+      },
+      members: [
+        {
+          type: 'way',
+          ref: '5'
+        },
+        {
+          type: 'way',
+          ref: '6'
+        }
+      ]
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is'
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [1, 1],
+              [0, 2],
+              [-1, 1],
+              [0, 0],
+              [1, 1]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+
+  osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
+    t.deepEqual(geojson, expected)
+    t.end()
+  })
+})
+

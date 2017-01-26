@@ -5,6 +5,8 @@ var once = require('once')
 var rewind = require('geojson-rewind')
 var collect = require('collect-stream')
 var from = require('from2')
+var mergePolygons = require('./lib/merge_polygons')
+var amap = require('map-limit')
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -63,18 +65,68 @@ function getGeoJSON (osm, opts, cb) {
     geom(osm, row, function (err, geometry) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
-      var metadata = {}
-      opts.metadata.forEach(function (key) {
-        if (row[key]) metadata[key] = row[key]
+
+      // Skip this entry if it has an interesting parent. This avoids
+      // double-processing the document.
+      hasAnInterestingParent(osm, row.id, function (err, has) {
+        if (err) return next(err)
+        if (has) {
+          next()
+        } else {
+          handleRow()
+        }
       })
-      next(null, opts.map(rewind({
-        type: 'Feature',
-        id: row.id,
-        geometry: geometry,
-        properties: xtend(row.tags || {}, metadata)
-      })))
+
+      function handleRow () {
+        var metadata = {}
+        opts.metadata.forEach(function (key) {
+          if (row[key]) metadata[key] = row[key]
+        })
+        next(null, opts.map(rewind({
+          type: 'Feature',
+          id: row.id,
+          geometry: geometry,
+          properties: xtend(row.tags || {}, metadata)
+        })))
+      }
     })
   }
+}
+
+// OsmDb, ID -> Bool <Async>
+function hasAnInterestingParent (osm, id, done) {
+  getContainingDocIds(osm, id, function (err, docIds) {
+    if (err) done(err)
+
+    amap(docIds, 3, iterator, completed)
+
+    function iterator (id, done) {
+      osm.log.get(id, function (err, node) {
+        if (err) return done(err)
+        done(null, node.value.v)
+      })
+    }
+
+    function completed (err, docs) {
+      if (err) return done(err)
+
+      var interestingParents = docs.filter(function (doc) {
+        return doc.tags && hasInterestingTags(doc.tags)
+      })
+      done(null, interestingParents.length > 0)
+    }
+  })
+}
+
+// Looks up the OSM IDs of the OSM documents that contain a reference to the
+// given ID.
+// OsmDb, ID -> [VersionID] <Async>
+function getContainingDocIds (osm, ref, done) {
+  osm.refs.list(ref, function (err, rows) {
+    if (err) done(err)
+    var docIds = rows.map(function (row) { return row.key })
+    done(null, docIds)
+  })
 }
 
 function geom (osm, doc, cb) {
@@ -106,6 +158,8 @@ function geom (osm, doc, cb) {
         })
       } else if (Object.keys(types)[0] === 'LineString') {
         cb(null, mergeViableLineStrings(geoms))
+      } else if (Object.keys(types)[0] === 'Polygon') {
+        cb(null, mergePolygons(geoms, { impl: 'turf' }))
       } else {
         cb(new Error('unknown type; should not happen'))
       }

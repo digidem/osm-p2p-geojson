@@ -1,6 +1,6 @@
 var test = require('tape')
 var merge = require('../../lib/merge_polygons')
-var polygonsEqual = require('../../lib/polygons_equal')
+var polygonsEqual = require('geojson-polygons-equal')
 
 test('1 polygon; no merge', function (t) {
   var poly = {

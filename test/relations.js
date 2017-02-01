@@ -7,7 +7,6 @@ var path = require('path')
 var rimraf = require('rimraf')
 var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
-var concat = require('concat-stream')
 var traverse = require('traverse')
 
 var getGeoJSON = require('../')
@@ -33,14 +32,6 @@ function json2batch (e) {
   delete e.id
   delete e.nodes
   return op
-}
-
-// [OsmObject] -> Error <Async>
-function writeOsmToDb (data, done) {
-  var batch = data.map(json2batch)
-  osm.batch(batch, function (err, docs) {
-    done(err)
-  })
 }
 
 // [OsmObject] -> Error, GeoJSON <Async>
@@ -111,13 +102,13 @@ test('single way -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
           coordinates: [
             [0.0, 0.0],
-            [1.0, 1.0],
+            [1.0, 1.0]
           ]
         }
       }
@@ -192,18 +183,18 @@ test('two disconnected ways -> MultiLineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'MultiLineString',
           coordinates: [
             [
               [0.0, 0.0],
-              [1.0, 1.0],
+              [1.0, 1.0]
             ],
             [
               [2.0, 2.0],
-              [3.0, 3.0],
+              [3.0, 3.0]
             ]
           ]
         }
@@ -273,14 +264,14 @@ test('two connected ways -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
           coordinates: [
             [0.0, 0.0],
             [1.0, 1.0],
-            [2.0, 2.0],
+            [2.0, 2.0]
           ]
         }
       }
@@ -349,14 +340,14 @@ test('two connected ways -> LineString (opposite order)', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
           coordinates: [
             [0.0, 0.0],
             [1.0, 1.0],
-            [2.0, 2.0],
+            [2.0, 2.0]
           ]
         }
       }
@@ -425,7 +416,7 @@ test('two connected ways /w heads touching -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
@@ -501,14 +492,14 @@ test('two connected ways /w tails touching -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
           coordinates: [
             [0.0, 0.0],
             [1.0, 1.0],
-            [2.0, 2.0],
+            [2.0, 2.0]
           ]
         }
       }
@@ -592,7 +583,7 @@ test('three connected ways -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
@@ -600,7 +591,7 @@ test('three connected ways -> LineString', function (t) {
             [0.0, 0.0],
             [1.0, 1.0],
             [2.0, 2.0],
-            [3.0, 3.0],
+            [3.0, 3.0]
           ]
         }
       }
@@ -675,7 +666,7 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'MultiLineString',
@@ -792,7 +783,7 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'MultiLineString',
@@ -871,7 +862,7 @@ test('many long ways -> LineString', function (t) {
       {
         type: 'Feature',
         properties: {
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',

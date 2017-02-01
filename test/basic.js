@@ -117,7 +117,7 @@ test('way', function (t) {
         id: 'A',
         properties: {
           id: 'A',
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
@@ -217,7 +217,7 @@ test('polygon', function (t) {
         id: 'A',
         properties: {
           id: 'A',
-          area: 'yes',
+          area: 'yes'
         },
         geometry: {
           type: 'Polygon',

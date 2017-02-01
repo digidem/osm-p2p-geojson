@@ -7,7 +7,6 @@ var path = require('path')
 var rimraf = require('rimraf')
 var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
-var concat = require('concat-stream')
 
 var getGeoJSON = require('../')
 var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
@@ -112,7 +111,7 @@ test('way', function (t) {
         id: 'A',
         properties: {
           id: 'A',
-          interesting: 'this is',
+          interesting: 'this is'
         },
         geometry: {
           type: 'LineString',
@@ -177,7 +176,7 @@ test('polygon', function (t) {
         id: 'A',
         properties: {
           id: 'A',
-          area: 'yes',
+          area: 'yes'
         },
         geometry: {
           type: 'Polygon',
@@ -2487,5 +2486,4 @@ test('polygon', function (t) {
 //     expect(json_after).to.equal(json_before)
 //   })
 // })
-
 

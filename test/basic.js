@@ -135,6 +135,7 @@ test('way', function (t) {
     })
   })
 })
+
 test('polygon', function (t) {
   var batch = [
     {
@@ -202,3 +203,53 @@ test('polygon', function (t) {
     })
   })
 })
+
+test('invalid polygon', function (t) {
+  var batch = [
+    {
+      type: 'way',
+      id: 'A',
+      nodes: ['B', 'C', 'B'],
+      tags: {area: 'yes'}
+    },
+    {
+      type: 'node',
+      id: 'B',
+      lat: 0.0,
+      lon: 0.0
+    },
+    {
+      type: 'node',
+      id: 'C',
+      lat: 0.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'D',
+      lat: 1.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'E',
+      lat: 1.0,
+      lon: 0.0
+    }
+  ].map(json2batch)
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+    ]
+  }
+  var osm = db()
+  osm.batch(batch, function (err, docs) {
+    t.error(err)
+    getGeoJSON(osm, function (err, geojson) {
+      t.error(err)
+      t.deepEqual(geojson, expected)
+      t.end()
+    })
+  })
+})
+

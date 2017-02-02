@@ -7,6 +7,7 @@ var rewind = require('geojson-rewind')
 var collect = require('collect-stream')
 var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
+var isValid = require('geojson-is-valid')
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -62,6 +63,7 @@ function getGeoJSON (osm, opts, cb) {
     geom(osm, row, function (err, geometry) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
+      if (!isValid(geometry)) return next()
 
       // Skip this entry if it has an interesting parent. This avoids
       // double-processing the document.
@@ -253,3 +255,4 @@ function geometriesByType (geoms) {
   })
   return types
 }
+

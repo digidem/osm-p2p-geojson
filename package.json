@@ -35,6 +35,7 @@
     "geojson-polygons-equal": "0.0.1",
     "from2": "^2.3.0",
     "geojson-dissolve": "^2.0.0",
+    "geojson-is-valid": "0.0.4",
     "geojson-polygons-equal": "0.0.1",
     "geojson-rewind": "^0.2.0",
     "geojsonhint": "^2.0.0",

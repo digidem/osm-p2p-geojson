@@ -8,6 +8,7 @@ var rimraf = require('rimraf')
 var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
 var traverse = require('traverse')
+var xtend = require('xtend')
 
 var getGeoJSON = require('../')
 var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
@@ -35,17 +36,26 @@ function json2batch (e) {
 }
 
 // [OsmObject] -> Error, GeoJSON <Async>
-function osmDataToGeoJson (data, done) {
+function osmDataToGeoJson (data, opts, done) {
+  if (opts && !done) {
+    done = opts
+    opts = {}
+  }
+
   var batch = data.map(json2batch)
 
   var osm = db()
   osm.batch(batch, function (err, docs) {
     if (err) return done(err)
-    getGeoJSON(osm, function (err, json) {
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
       if (err) return done(err)
-      json = clearProperty('version', json)
-      json = clearProperty('id', json)
-      done(null, json)
+      getGeoJSON(osm, xtend(opts, { docs: docs }), function (err, json) {
+        if (err) return done(err)
+        json = clearProperty('version', json)
+        json = clearProperty('id', json)
+        done(null, json)
+      })
     })
   })
 }

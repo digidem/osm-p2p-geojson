@@ -12,7 +12,7 @@ var from = require('from2')
 var mergePolygons = require('./lib/merge_polygons')
 var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
-var isValid = require('geojson-is-valid')
+var geoJsonHints = require('geojsonhint').hint
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -71,7 +71,14 @@ function getGeoJSON (osm, opts, cb) {
     geom(osm, row, function (err, geometry) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
-      if (!isValid(geometry)) return next()
+
+      geometry = rewind(geometry)
+
+      var errors = geoJsonHints(geometry)
+      if (errors.length > 0) {
+        console.error(errors)
+        return next()
+      }
 
       geometry = rewind(geometry)
 

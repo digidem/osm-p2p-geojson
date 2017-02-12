@@ -913,7 +913,7 @@ test('two connected ways (diamond shape) -> Polygon', function (t) {
       tags: {
         area: 'yes'
       },
-      nodes: [ '1', '2', '3', '1' ]
+      nodes: [ '1', '3', '2', '1' ]
     },
     {
       type: 'way',

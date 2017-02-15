@@ -12,7 +12,8 @@ var hasInterestingTags = require('./lib/has_interesting_tags')
 
 var DEFAULTS = {
   metadata: ['id', 'version', 'timestamp'],
-  bbox: [-Infinity, -Infinity, Infinity, Infinity]
+  bbox: [-Infinity, -Infinity, Infinity, Infinity],
+  map: function (f) { return f }
 }
 
 module.exports = getGeoJSON
@@ -64,12 +65,12 @@ function getGeoJSON (osm, opts, cb) {
       opts.metadata.forEach(function (key) {
         if (row[key]) metadata[key] = row[key]
       })
-      next(null, rewind({
+      next(null, opts.map(rewind({
         type: 'Feature',
         id: row.id,
         geometry: geometry,
         properties: xtend(row.tags || {}, metadata)
-      }))
+      })))
     })
   }
 }

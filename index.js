@@ -155,6 +155,15 @@ function geom (osm, doc, opts, cb) {
   } else if (doc.type === 'relation') {
     expandMembers(osm, doc.members || [], opts, function (err, geoms) {
       if (err) return cb(err)
+      geoms = geoms.reduce(function (acc, geom) {
+        var errors = geoJsonHints(geom)
+        if (errors.length > 0) {
+          console.error(errors)
+        } else {
+          acc.push(geom)
+        }
+        return acc
+      }, [])
       var result = assembleGeometries(geoms)
       cb(null, result)
     })

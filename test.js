@@ -2488,4 +2488,53 @@ test('polygon', function (t) {
 //   })
 // })
 
+test('opts.map', function (t) {
+  var batch = [
+    {
+      type: 'node',
+      id: 1,
+      lat: 1.234,
+      lon: 4.321,
+      tags: {
+        interesting: 'this is'
+      }
+    }
+  ].map(json2batch)
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: 2,
+        properties: {
+          id: 1,
+          interesting: 'this is'
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [4.321, 1.234]
+        }
+      }
+    ]
+  }
+
+  function mapFn (geom) {
+    if (geom.id) {
+      geom.id++
+    }
+    return geom
+  }
+
+  var osm = db()
+  osm.batch(batch, function (err, docs) {
+    t.error(err)
+    expected.features[0].properties.version = docs[0].key
+    getGeoJSON(osm, { map: mapFn }, function (err, geojson) {
+      t.error(err)
+      t.deepEqual(geojson, expected)
+      t.end()
+    })
+  })
+})
+
 

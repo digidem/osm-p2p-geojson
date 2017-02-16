@@ -43,6 +43,7 @@ Get GeoJSON from the database. GeoJSON is returned as a readable stream, or, if 
 - `options.bbox` - bounding box to export, defaults to `[-Infinity, -Infinity, Infinity, Infinity]`
 - `options.metadata` - Array of metadata properties to include as GeoJSON properties. Defaults to `['id', 'version', 'timestamp']`
 - `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `getGeoJSON.obj()`
+- `options.map` - a function that maps a `Feature` to another `Feature`. Defaults to the no-op `function mapFn (feature) { return feature }`
 
 ## Contribute
 

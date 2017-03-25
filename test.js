@@ -7,7 +7,7 @@ var path = require('path')
 var rimraf = require('rimraf')
 var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
-var concat = require('concat-stream')
+var collect = require('collect-stream')
 
 var getGeoJSON = require('./')
 var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
@@ -67,10 +67,15 @@ test('node', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, function (err, geojson) {
+
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
       t.error(err)
-      t.deepEqual(geojson, expected)
-      t.end()
+      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+        t.error(err)
+        t.deepEqual(geojson, expected)
+        t.end()
+      })
     })
   })
 })
@@ -129,13 +134,37 @@ test('way', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, function (err, geojson) {
+
+    // callback
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
+      t.error(err)
+      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+        t.error(err)
+        t.deepEqual(geojson, expected)
+
+        testStreaming()
+      })
+    })
+  })
+
+  function testStreaming () {
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    var s = osm.queryStream(bbox).pipe(getGeoJSON(osm, { objectMode: true }))
+    collect(s, function (err, geojson) {
+      // Re-wrap the data in a FeatureCollection
+      geojson = {
+        type: 'FeatureCollection',
+        features: geojson
+      }
+
       t.error(err)
       t.deepEqual(geojson, expected)
       t.end()
     })
-  })
+  }
 })
+
 test('polygon', function (t) {
   var batch = [
     {
@@ -196,13 +225,18 @@ test('polygon', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, function (err, geojson) {
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
       t.error(err)
-      t.deepEqual(geojson, expected)
-      t.end()
+      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+        t.error(err)
+        t.deepEqual(geojson, expected)
+        t.end()
+      })
     })
   })
 })
+
 // test.skip('simple multipolygon', function (t) {
 //   t.plan(1)
 //   var json, geojson
@@ -2529,10 +2563,15 @@ test('opts.map', function (t) {
   osm.batch(batch, function (err, docs) {
     t.error(err)
     expected.features[0].properties.version = docs[0].key
-    getGeoJSON(osm, { map: mapFn }, function (err, geojson) {
+
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
       t.error(err)
-      t.deepEqual(geojson, expected)
-      t.end()
+      getGeoJSON(osm, { map: mapFn, docs: docs }, function (err, geojson) {
+        t.error(err)
+        t.deepEqual(geojson, expected)
+        t.end()
+      })
     })
   })
 })

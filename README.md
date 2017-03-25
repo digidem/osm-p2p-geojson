@@ -1,6 +1,6 @@
 # osm-p2p-geojson
 
-> Export GeoJSON from osm-p2p-db
+> Transform OSM documents in an osm-p2p-db to GeoJSON
 
 ## Table of Contents
 
@@ -19,13 +19,25 @@ npm install osm-p2p-geojson
 ## Usage
 
 ```js
+// streaming:
 var getGeoJSON = require('osm-p2p-geojson')
 var stream = getGeoJSON(osm)
-stream.pipe(process.stdout)
-// pipes GeoJSON to stdout...
-getGeoJSON(osm, function (err, geojson) {
-  console.log(geojson)
-  // outputs geojson object
+
+var q = osm.query({
+  bbox: [-Infinity, -Infinity, Infinity, Infinity]
+})
+
+// outputs geojson object
+q.pipe(stream).pipe(process.stdout)
+
+// or as callbacks:
+osm.query({
+  bbox: [-Infinity, -Infinity, Infinity, Infinity]
+}, function (err, docs) {
+  getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+    console.log(geojson)
+    // outputs geojson object
+  })
 })
 ```
 
@@ -35,12 +47,13 @@ getGeoJSON(osm, function (err, geojson) {
 var getGeoJSON = require('osm-p2p-geojson')
 ```
 
-### var rstream = getGeoJSON(osm[, options][, callback])
+### var stream = getGeoJSON(osm[, options][, callback])
 
 Get GeoJSON from the database. GeoJSON is returned as a readable stream, or, if passed, `callback(err, geoJson)`.
 
 - `osm` - a [`osm-p2p-db`](https://github.com/digidem/osm-p2p-db)
-- `options.bbox` - bounding box to export, defaults to `[-Infinity, -Infinity, Infinity, Infinity]`
+- `docs` - a list of OSM documents. If not provided here, they must be written
+  to the returned `stream`.
 - `options.metadata` - Array of metadata properties to include as GeoJSON properties. Defaults to `['id', 'version', 'timestamp']`
 - `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `getGeoJSON.obj()`
 - `options.map` - a function that maps a `Feature` to another `Feature`. Defaults to the no-op `function mapFn (feature) { return feature }`

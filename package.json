@@ -33,6 +33,7 @@
     "from2": "^2.3.0",
     "geojson-dissolve": "^4.0.0",
     "geojson-polygons-equal": "0.0.1",
+    "from2": "^2.3.0",
     "geojson-rewind": "^0.2.0",
     "geojsonhint": "^2.0.0",
     "map-limit": "0.0.1",

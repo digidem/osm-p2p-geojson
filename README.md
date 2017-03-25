@@ -45,6 +45,11 @@ Get GeoJSON from the database. GeoJSON is returned as a readable stream, or, if 
 - `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `getGeoJSON.obj()`
 - `options.map` - a function that maps a `Feature` to another `Feature`. Defaults to the no-op `function mapFn (feature) { return feature }`
 
+**N.B.**: If `options.objectMode` is enabled and no `callback` is provided, the
+resultant object stream will emit GeoJSON `Feature` objects. This is not valid
+GeoJSON as-is: the recipient of the stream will need to either wrap these
+`Feature`s into a `FeatureCollection` or otherwise further transform them.
+
 ## Contribute
 
 PRs accepted.

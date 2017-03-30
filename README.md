@@ -49,7 +49,9 @@ var getGeoJSON = require('osm-p2p-geojson')
 
 ### var stream = getGeoJSON(osm[, options][, callback])
 
-Get GeoJSON from the database. GeoJSON is returned as a readable stream, or, if passed, `callback(err, geoJson)`.
+Creates a TransformStream that will take as input a stream of osm-p2p documents
+and outputs a stream of GeoJSON. If you prefer a callback rather than a stream
+for reading output, you can pass `callback(err, geojson)`.
 
 - `osm` - a [`osm-p2p-db`](https://github.com/digidem/osm-p2p-db)
 - `docs` - a list of OSM documents. If not provided here, they must be written

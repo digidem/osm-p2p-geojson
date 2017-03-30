@@ -2,9 +2,9 @@ var xtend = require('xtend')
 var pumpify = require('pumpify')
 var through = require('through2')
 var once = require('once')
-var readonly = require('read-only-stream')
 var rewind = require('geojson-rewind')
 var collect = require('collect-stream')
+var from = require('from2')
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -12,7 +12,6 @@ var hasInterestingTags = require('./lib/has_interesting_tags')
 
 var DEFAULTS = {
   metadata: ['id', 'version', 'timestamp'],
-  bbox: [-Infinity, -Infinity, Infinity, Infinity],
   map: function (f) { return f }
 }
 
@@ -35,18 +34,21 @@ function getGeoJSON (osm, opts, cb) {
   if (!opts.metadata) opts.metadata = []
   if (!Array.isArray(opts.metadata)) throw new Error('metadata option must be an array')
 
-  var q = [[opts.bbox[0], opts.bbox[2]], [opts.bbox[1], opts.bbox[3]]]
-  var pipeline = [osm.queryStream(q), through.obj(write)]
+  var pipeline = [through.obj(write)]
   var stream
+
+  if (opts.docs) {
+    pipeline.unshift(from.obj(opts.docs))
+  }
 
   if (!opts.objectMode && !cb) {
     stream = pumpify(pipeline.concat(FCStream()))
   } else {
-    stream = pumpify.obj(pipeline)
+    stream = pipeline.length === 1 ? pipeline[0] : pumpify.obj(pipeline)
   }
 
   if (cb) {
-    collect(stream, function (err, features) {
+    return collect(stream, function (err, features) {
       if (err) return cb(err)
       cb(null, {
         type: 'FeatureCollection',
@@ -54,7 +56,7 @@ function getGeoJSON (osm, opts, cb) {
       })
     })
   } else {
-    return readonly(stream)
+    return stream
   }
 
   function write (row, enc, next) {

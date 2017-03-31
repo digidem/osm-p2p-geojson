@@ -1,6 +1,7 @@
 var test = require('tape')
 
 var osmDataToGeoJson = require('./osmdata-to-geojson')
+var getGeoJSON = require('../')
 var collect = require('collect-stream')
 
 test('node', function (t) {
@@ -92,9 +93,60 @@ test('way', function (t) {
   osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-
-    testStreaming()
+    t.end()
   })
+})
+
+
+test('way (streaming)', function (t) {
+  var batch = [
+    {
+      type: 'way',
+      id: 'A',
+      tags: {
+        interesting: 'this is'
+      },
+      nodes: ['B', 'C', 'D']
+    },
+    {
+      type: 'node',
+      id: 'B',
+      lat: 0.0,
+      lon: 1.0
+    },
+    {
+      type: 'node',
+      id: 'C',
+      lat: 0.0,
+      lon: 1.1
+    },
+    {
+      type: 'node',
+      id: 'D',
+      lat: 0.1,
+      lon: 1.2
+    }
+  ]
+
+  var expected = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          interesting: 'this is'
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [1.0, 0.0],
+            [1.1, 0.0],
+            [1.2, 0.1]
+          ]
+        }
+      }
+    ]
+  }
 
   function testStreaming () {
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]

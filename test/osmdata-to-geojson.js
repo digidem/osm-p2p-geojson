@@ -8,6 +8,7 @@ var mkdirp = require('mkdirp')
 var fdstore = require('fd-chunk-store')
 var traverse = require('traverse')
 var xtend = require('xtend')
+var through = require('through2')
 
 var getGeoJSON = require('../')
 
@@ -61,7 +62,6 @@ module.exports = function osmDataToGeoJson (data, opts, done) {
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
     osm.query(bbox, function (err, docs) {
       if (err) return done(err)
-      console.log(opts)
       getGeoJSON(osm, xtend(opts, { docs: docs }), function (err, json) {
         if (err) return done(err)
         json = clearProperty('version', json)
@@ -72,3 +72,25 @@ module.exports = function osmDataToGeoJson (data, opts, done) {
   })
 }
 
+module.exports.getQueryStream = function (data) {
+  var batch = data.map(json2batch)
+  var t = through.obj()
+
+  var osm = db()
+  t.osm = osm
+  osm.batch(batch, function (err, docs) {
+    if (err) return done(err)
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    var q = osm.queryStream(bbox)
+    var x = through.obj(function (row, enc, next) {
+      row = clearProperty('version', row)
+      row = clearProperty('id', row)
+      this.push(row)
+      next()
+    })
+    var s = getGeoJSON(osm, { objectMode: true })
+    q.pipe(s).pipe(x).pipe(t)
+  })
+
+  return t
+}

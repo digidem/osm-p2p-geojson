@@ -71,7 +71,6 @@ function getGeoJSON (osm, opts, cb) {
 
       var errors = geoJsonHints(geometry)
       if (errors.length > 0) {
-        console.error(errors)
         return next()
       }
 

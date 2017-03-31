@@ -56,6 +56,7 @@ test('single way -> LineString', function (t) {
   }
 
   osmDataToGeoJson(data, function (err, geojson) {
+    t.error(err)
     t.deepEqual(geojson, expected)
     t.end()
   })

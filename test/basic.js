@@ -1,38 +1,7 @@
-var tmpdir = require('os').tmpdir()
 var test = require('tape')
-var osmdb = require('osm-p2p-db')
-var memdb = require('memdb')
-var hyperlog = require('hyperlog')
-var path = require('path')
-var rimraf = require('rimraf')
-var mkdirp = require('mkdirp')
-var fdstore = require('fd-chunk-store')
+
+var osmDataToGeoJson = require('./osmdata-to-geojson')
 var collect = require('collect-stream')
-
-var getGeoJSON = require('../')
-var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
-
-function db () {
-  rimraf.sync(dir)
-  mkdirp.sync(dir)
-  return osmdb({
-    db: memdb(),
-    log: hyperlog(memdb(), { valueEncoding: 'json' }),
-    store: fdstore(4096, path.join(dir, 'kdb'))
-  })
-}
-
-function json2batch (e) {
-  var op = {
-    type: 'put',
-    key: e.id,
-    value: e
-  }
-  e.refs = e.nodes
-  delete e.id
-  delete e.nodes
-  return op
-}
 
 test('node', function (t) {
   var batch = [
@@ -45,15 +14,14 @@ test('node', function (t) {
         interesting: 'this is'
       }
     }
-  ].map(json2batch)
+  ]
+
   var expected = {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
-        id: 1,
         properties: {
-          id: 1,
           interesting: 'this is'
         },
         geometry: {
@@ -64,20 +32,10 @@ test('node', function (t) {
     ]
   }
 
-  var osm = db()
-  osm.batch(batch, function (err, docs) {
+  osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
-    expected.features[0].properties.version = docs[0].key
-
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    osm.query(bbox, function (err, docs) {
-      t.error(err)
-      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
-        t.error(err)
-        t.deepEqual(geojson, expected)
-        t.end()
-      })
-    })
+    t.deepEqual(geojson, expected)
+    t.end()
   })
 })
 
@@ -109,15 +67,14 @@ test('way', function (t) {
       lat: 0.1,
       lon: 1.2
     }
-  ].map(json2batch)
+  ]
+
   var expected = {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
-        id: 'A',
         properties: {
-          id: 'A',
           interesting: 'this is'
         },
         geometry: {
@@ -131,22 +88,12 @@ test('way', function (t) {
       }
     ]
   }
-  var osm = db()
-  osm.batch(batch, function (err, docs) {
+
+  osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
-    expected.features[0].properties.version = docs[0].key
+    t.deepEqual(geojson, expected)
 
-    // callback
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    osm.query(bbox, function (err, docs) {
-      t.error(err)
-      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
-        t.error(err)
-        t.deepEqual(geojson, expected)
-
-        testStreaming()
-      })
-    })
+    testStreaming()
   })
 
   function testStreaming () {
@@ -164,13 +111,13 @@ test('way', function (t) {
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
     var s = osm.queryStream(bbox).pipe(getGeoJSON(osm, { objectMode: true }))
     collect(s, function (err, geojson) {
+      t.error(err)
+
       // Re-wrap the data in a FeatureCollection
       geojson = {
         type: 'FeatureCollection',
         features: geojson
       }
-
-      t.error(err)
       t.deepEqual(geojson, expected)
       t.end()
     })
@@ -209,15 +156,14 @@ test('polygon', function (t) {
       lat: 1.0,
       lon: 0.0
     }
-  ].map(json2batch)
+  ]
+
   var expected = {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
-        id: 'A',
         properties: {
-          id: 'A',
           area: 'yes'
         },
         geometry: {
@@ -234,19 +180,10 @@ test('polygon', function (t) {
     ]
   }
 
-  var osm = db()
-  osm.batch(batch, function (err, docs) {
+  osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
-    expected.features[0].properties.version = docs[0].key
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    osm.query(bbox, function (err, docs) {
-      t.error(err)
-      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
-        t.error(err)
-        t.deepEqual(geojson, expected)
-        t.end()
-      })
-    })
+    t.deepEqual(geojson, expected)
+    t.end()
   })
 })
 
@@ -261,15 +198,14 @@ test('opts.map', function (t) {
         interesting: 'this is'
       }
     }
-  ].map(json2batch)
+  ]
+
   var expected = {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
-        id: 2,
         properties: {
-          id: 1,
           interesting: 'this is'
         },
         geometry: {
@@ -287,20 +223,10 @@ test('opts.map', function (t) {
     return geom
   }
 
-  var osm = db()
-  osm.batch(batch, function (err, docs) {
+  osmDataToGeoJson(batch, { map: mapFn }, function (err, geojson) {
     t.error(err)
-    expected.features[0].properties.version = docs[0].key
-
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    osm.query(bbox, function (err, docs) {
-      t.error(err)
-      getGeoJSON(osm, { map: mapFn, docs: docs }, function (err, geojson) {
-        t.error(err)
-        t.deepEqual(geojson, expected)
-        t.end()
-      })
-    })
+    t.deepEqual(geojson, expected)
+    t.end()
   })
 })
 
@@ -336,25 +262,18 @@ test('invalid polygon', function (t) {
       lat: 1.0,
       lon: 0.0
     }
-  ].map(json2batch)
+  ]
+
   var expected = {
     type: 'FeatureCollection',
     features: [
     ]
   }
 
-  var osm = db()
-  osm.batch(batch, function (err, docs) {
+  osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    osm.query(bbox, function (err, docs) {
-      t.error(err)
-      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
-        t.error(err)
-        t.deepEqual(geojson, expected)
-        t.end()
-      })
-    })
+    t.deepEqual(geojson, expected)
+    t.end()
   })
 })
 

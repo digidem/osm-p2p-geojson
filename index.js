@@ -9,7 +9,6 @@ var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
 var geoJsonHints = require('geojsonhint').hint
 var from = require('from2')
-var mergePolygons = require('./lib/merge_polygons')
 var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
 var geoJsonHints = require('geojsonhint').hint

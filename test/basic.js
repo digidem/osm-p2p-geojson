@@ -63,6 +63,7 @@ test('node', function (t) {
       }
     ]
   }
+
   var osm = db()
   osm.batch(batch, function (err, docs) {
     t.error(err)
@@ -232,6 +233,7 @@ test('polygon', function (t) {
       }
     ]
   }
+
   var osm = db()
   osm.batch(batch, function (err, docs) {
     t.error(err)
@@ -340,13 +342,18 @@ test('invalid polygon', function (t) {
     features: [
     ]
   }
+
   var osm = db()
   osm.batch(batch, function (err, docs) {
     t.error(err)
-    getGeoJSON(osm, function (err, geojson) {
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    osm.query(bbox, function (err, docs) {
       t.error(err)
-      t.deepEqual(geojson, expected)
-      t.end()
+      getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+        t.error(err)
+        t.deepEqual(geojson, expected)
+        t.end()
+      })
     })
   })
 })

@@ -42,7 +42,7 @@ function getGeoJSON (osm, opts, cb) {
   }
 
   if (!opts.objectMode && !cb) {
-    stream = pumpify(pipeline.concat(FCStream()))
+    stream = pumpify.obj(pipeline.concat(FCStream()))
   } else {
     stream = pipeline.length === 1 ? pipeline[0] : pumpify.obj(pipeline)
   }

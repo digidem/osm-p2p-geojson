@@ -150,6 +150,17 @@ test('way', function (t) {
 
   function testStreaming () {
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    var s = osm.queryStream(bbox).pipe(getGeoJSON(osm))
+    collect(s, function (err, geojson) {
+      t.error(err)
+      t.deepEqual(JSON.parse(geojson), expected)
+
+      testStreamingObjectMode()
+    })
+  }
+
+  function testStreamingObjectMode () {
+    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
     var s = osm.queryStream(bbox).pipe(getGeoJSON(osm, { objectMode: true }))
     collect(s, function (err, geojson) {
       // Re-wrap the data in a FeatureCollection

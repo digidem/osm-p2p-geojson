@@ -148,9 +148,10 @@ test('way (streaming)', function (t) {
     ]
   }
 
+  testStreaming()
+
   function testStreaming () {
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    var s = osm.queryStream(bbox).pipe(getGeoJSON(osm))
+    var s = osmDataToGeoJson.getQueryStream(batch)
     collect(s, function (err, geojson) {
       t.error(err)
       t.deepEqual(JSON.parse(geojson), expected)
@@ -160,8 +161,7 @@ test('way (streaming)', function (t) {
   }
 
   function testStreamingObjectMode () {
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    var s = osm.queryStream(bbox).pipe(getGeoJSON(osm, { objectMode: true }))
+    var s = osmDataToGeoJson.getQueryStream(batch, { objectMode: true })
     collect(s, function (err, geojson) {
       t.error(err)
 

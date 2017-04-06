@@ -10,6 +10,8 @@ var traverse = require('traverse')
 var xtend = require('xtend')
 var through = require('through2')
 var clone = require('clone')
+var from = require('from2')
+var concat = require('concat-stream')
 
 var getGeoJSON = require('../')
 
@@ -68,13 +70,13 @@ module.exports = function osmDataToGeoJson (data, opts, done) {
         if (err) return done(err)
         json = clearProperty('version', json)
         json = clearProperty('id', json)
-        done(null, json)
+        done(null, json, osm)
       })
     })
   })
 }
 
-module.exports.getQueryStream = function (data) {
+module.exports.getQueryStream = function (data, opts) {
   var batch = data.map(json2batch)
   var t = through.obj()
 
@@ -84,15 +86,36 @@ module.exports.getQueryStream = function (data) {
     if (err) return done(err)
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
     var q = osm.queryStream(bbox)
-    var x = through.obj(function (row, enc, next) {
-      row = clearProperty('version', row)
-      row = clearProperty('id', row)
-      this.push(row)
-      next()
-    })
-    var s = getGeoJSON(osm, { objectMode: true })
-    q.pipe(s).pipe(x).pipe(t)
+    var s = getGeoJSON(osm, opts)
+
+    if (opts && opts.objectMode) {
+      var x = through.obj(function (row, enc, next) {
+        row = clearProperty('version', row)
+        row = clearProperty('id', row)
+        next(null, row)
+      })
+      q.pipe(s).pipe(x).pipe(t)
+    } else {
+      // Accumulate the entire GeoJSON string and parse it, so that 'version'
+      // and 'id' properties can be stripped, then re-pipe it into the outgoing
+      // stream.
+      q.pipe(s).pipe(concat(function (text) {
+        var data = JSON.parse(text)
+        data = clearProperty('version', data)
+        data = clearProperty('id', data)
+        fromString(JSON.stringify(data)).pipe(t)
+      }))
+    }
   })
 
   return t
+}
+
+function fromString (string) {
+  return from(function(size, next) {
+    if (string.length <= 0) return next(null, null)
+    var chunk = string.slice(0, size)
+    string = string.slice(size)
+    next(null, chunk)
+  })
 }

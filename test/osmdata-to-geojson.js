@@ -9,6 +9,7 @@ var fdstore = require('fd-chunk-store')
 var traverse = require('traverse')
 var xtend = require('xtend')
 var through = require('through2')
+var clone = require('clone')
 
 var getGeoJSON = require('../')
 
@@ -24,6 +25,7 @@ function db () {
 }
 
 function json2batch (e) {
+  e = clone(e)
   var op = {
     type: 'put',
     key: e.id,

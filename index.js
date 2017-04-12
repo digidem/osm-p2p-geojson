@@ -63,7 +63,7 @@ function getGeoJSON (osm, opts, cb) {
   }
 
   function write (row, enc, next) {
-    geom(osm, row, function (err, geometry) {
+    geom(osm, row, opts.polygonFeatures, function (err, geometry) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
 
@@ -137,7 +137,7 @@ function getContainingDocIds (osm, ref, done) {
   })
 }
 
-function geom (osm, doc, cb) {
+function geom (osm, doc, polygonFeatures, cb) {
   cb = once(cb)
   if (doc.type === 'node') {
     cb(null, {
@@ -147,14 +147,14 @@ function geom (osm, doc, cb) {
   } else if (doc.type === 'way') {
     expandRefs(osm, doc.refs || [], function (err, coords) {
       if (err) return cb(err)
-      var type = isPolygon(coords, doc.tags) ? 'Polygon' : 'LineString'
+      var type = isPolygon(coords, doc.tags, polygonFeatures) ? 'Polygon' : 'LineString'
       cb(null, {
         type: type,
         coordinates: type === 'LineString' ? coords : [coords]
       })
     })
   } else if (doc.type === 'relation') {
-    expandMembers(osm, doc.members || [], function (err, geoms) {
+    expandMembers(osm, doc.members || [], polygonFeatures, function (err, geoms) {
       if (err) return cb(err)
       var result = assembleGeometries(geoms)
       cb(null, result)
@@ -216,7 +216,7 @@ function expandRefs (osm, refs, cb) {
   }
 }
 
-function expandMembers (osm, members, cb) {
+function expandMembers (osm, members, polygonFeatures, cb) {
   cb = once(cb)
   var pending = 1
   var geoms = Array(members.length)
@@ -226,7 +226,7 @@ function expandMembers (osm, members, cb) {
       if (err) return cb(err)
       if (docs) {
         var doc = mostRecentFork(docs) // for now
-        geom(osm, doc, function (err, geometry) {
+        geom(osm, doc, polygonFeatures, function (err, geometry) {
           if (err) return cb(err)
           geoms[ix] = geometry
           if (--pending === 0) cb(null, geoms)

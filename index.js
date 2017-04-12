@@ -67,7 +67,7 @@ function getGeoJSON (osm, opts, cb) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
 
-      geometry = rewind(geometry)
+      geometry = rewindFixed(geometry)
 
       var errors = geoJsonHints(geometry)
       if (errors.length > 0) {
@@ -265,3 +265,12 @@ function geometriesByType (geoms) {
   return types
 }
 
+// Handles GeometryCollections until https://github.com/mapbox/geojson-rewind/pull/14 lands
+function rewindFixed (gj) {
+  if (gj && gj.type === 'GeometryCollection') {
+    gj.geometries = gj.geometries.map(function (g) { return rewind(g) })
+    return gj
+  } else {
+    return rewind(gj)
+  }
+}

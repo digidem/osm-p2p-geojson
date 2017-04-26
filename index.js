@@ -183,6 +183,18 @@ function assembleGeometries (geoms) {
 
   var type = Object.keys(types)[0]
   if (numTypes === 1 && dissolvableTypes.indexOf(type) !== -1) {
+    geoms = geoms.map(rewindFixed)
+
+    var errors = geoms.reduce(function (accum, geom) {
+      var errs = geoJsonHints(geom)
+      if (errs.length > 0) return accum.concat(errs)
+      else return accum
+    }, [])
+    if (errors.length > 0) {
+      // skip
+      return {}
+    }
+
     return dissolve(types[type])
   }
 

@@ -213,9 +213,8 @@ function expandRefs (osm, refs, cb) {
     pending++
     osm.get(ref, function (err, docs) {
       if (err) return cb(err)
-      if (docs && Object.keys(docs).length) {
-        var doc = mostRecentFork(docs) // for now
-        if (!doc) return cb(new Error('Missing ref #' + ref))
+      var doc = mostRecentFork(docs || []) // for now
+      if (doc) {
         coords[ix] = [+doc.lon, +doc.lat]
       }
       if (--pending === 0) done()
@@ -236,8 +235,8 @@ function expandMembers (osm, members, polygonFeatures, cb) {
     pending++
     osm.get(member.ref, function (err, docs) {
       if (err) return cb(err)
-      if (docs) {
-        var doc = mostRecentFork(docs) // for now
+      var doc = mostRecentFork(docs || []) // for now
+      if (doc) {
         geom(osm, doc, polygonFeatures, function (err, geometry) {
           if (err) return cb(err)
           geoms[ix] = geometry
@@ -249,8 +248,11 @@ function expandMembers (osm, members, polygonFeatures, cb) {
   if (--pending === 0) cb(null, geoms)
 }
 
+// [OsmDocument] -> OsmDocument|null
 function mostRecentFork (docs) {
-  return Object.keys(docs).map(key => docs[key]).sort(cmpFork)[0]
+  var results = Object.keys(docs).map(key => docs[key]).sort(cmpFork)
+  results = results.filter(function (doc) { return !doc.deleted })
+  return results[0]
 }
 
 /**

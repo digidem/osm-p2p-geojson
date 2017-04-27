@@ -103,12 +103,12 @@ function getGeoJSON (osm, opts, cb) {
 
 // OsmDb, ID -> Bool <Async>
 function hasAnInterestingParent (osm, id, done) {
-  getContainingDocIds(osm, id, function (err, docIds) {
+  getContainingDocIds(osm, id, function (err, docVersions) {
     if (err) done(err)
 
-    amap(docIds, 3, iterator, completed)
+    amap(docVersions, 3, version2doc, completed)
 
-    function iterator (id, done) {
+    function version2doc (id, done) {
       osm.log.get(id, function (err, node) {
         if (err) return done(err)
         done(null, node.value.v)
@@ -132,8 +132,8 @@ function hasAnInterestingParent (osm, id, done) {
 function getContainingDocIds (osm, ref, done) {
   osm.refs.list(ref, function (err, rows) {
     if (err) done(err)
-    var docIds = rows.map(function (row) { return row.key })
-    done(null, docIds)
+    var docVersions = rows.map(function (row) { return row.key })
+    done(null, docVersions)
   })
 }
 

@@ -111,7 +111,7 @@ function hasAnInterestingParent (osm, id, done) {
     function version2doc (id, done) {
       osm.log.get(id, function (err, node) {
         if (err) return done(err)
-        done(null, node.value.v)
+        done(null, node.value.v || {})
       })
     }
 

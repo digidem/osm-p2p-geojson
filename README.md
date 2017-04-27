@@ -59,6 +59,7 @@ for reading output, you can pass `callback(err, geojson)`.
 - `options.metadata` - Array of metadata properties to include as GeoJSON properties. Defaults to `['id', 'version', 'timestamp']`
 - `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `getGeoJSON.obj()`
 - `options.map` - a function that maps a `Feature` to another `Feature`. Defaults to the no-op `function mapFn (feature) { return feature }`
+- `options.polygonFeatures` - _either_ a list of tag keys and values that are polygons (for schema see https://github.com/tyrasd/osm-polygon-features/blob/master/schema.json) _or_ a function that will be called with two arguments: `coordinates` (from the GeoJSON geometry) and `tags` (a hash of tag key-value pairs) and should return `true` for polygons.
 
 **N.B.**: If `options.objectMode` is enabled and no `callback` is provided, the
 resultant object stream will emit GeoJSON `Feature` objects. This is not valid

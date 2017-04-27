@@ -5,6 +5,9 @@ var once = require('once')
 var rewind = require('geojson-rewind')
 var collect = require('collect-stream')
 var from = require('from2')
+var amap = require('map-limit')
+var dissolve = require('geojson-dissolve')
+var geoJsonHints = require('geojsonhint').hint
 
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
@@ -60,24 +63,81 @@ function getGeoJSON (osm, opts, cb) {
   }
 
   function write (row, enc, next) {
-    geom(osm, row, function (err, geometry) {
+    geom(osm, row, opts.polygonFeatures, function (err, geometry) {
       if (err) return next(err)
       if (!row.tags || !hasInterestingTags(row.tags)) return next()
-      var metadata = {}
-      opts.metadata.forEach(function (key) {
-        if (row[key]) metadata[key] = row[key]
+
+      geometry = rewindFixed(geometry)
+
+      var errors = geoJsonHints(geometry)
+      if (errors.length > 0) {
+        return next()
+      }
+
+      // Skip this entry if it has an interesting parent. This avoids
+      // double-processing the document.
+      hasAnInterestingParent(osm, row.id, function (err, has) {
+        if (err) return next(err)
+        if (has) {
+          next()
+        } else {
+          handleRow()
+        }
       })
-      next(null, opts.map(rewind({
-        type: 'Feature',
-        id: row.id,
-        geometry: geometry,
-        properties: xtend(row.tags || {}, metadata)
-      })))
+
+      function handleRow () {
+        var metadata = {}
+        opts.metadata.forEach(function (key) {
+          if (row[key]) metadata[key] = row[key]
+        })
+        next(null, opts.map({
+          type: 'Feature',
+          id: row.id,
+          geometry: geometry,
+          properties: xtend(row.tags || {}, metadata)
+        }))
+      }
     })
   }
 }
 
-function geom (osm, doc, cb) {
+// OsmDb, ID -> Bool <Async>
+function hasAnInterestingParent (osm, id, done) {
+  getContainingDocIds(osm, id, function (err, docVersions) {
+    if (err) done(err)
+
+    amap(docVersions, 3, version2doc, completed)
+
+    function version2doc (id, done) {
+      osm.log.get(id, function (err, node) {
+        if (err) return done(err)
+        done(null, node.value.v || {})
+      })
+    }
+
+    function completed (err, docs) {
+      if (err) return done(err)
+
+      var interestingParents = docs.filter(function (doc) {
+        return doc.tags && hasInterestingTags(doc.tags)
+      })
+      done(null, interestingParents.length > 0)
+    }
+  })
+}
+
+// Looks up the OSM IDs of the OSM documents that contain a reference to the
+// given ID.
+// OsmDb, ID -> [VersionID] <Async>
+function getContainingDocIds (osm, ref, done) {
+  osm.refs.list(ref, function (err, rows) {
+    if (err) done(err)
+    var docVersions = rows.map(function (row) { return row.key })
+    done(null, docVersions)
+  })
+}
+
+function geom (osm, doc, polygonFeatures, cb) {
   cb = once(cb)
   if (doc.type === 'node') {
     cb(null, {
@@ -87,21 +147,62 @@ function geom (osm, doc, cb) {
   } else if (doc.type === 'way') {
     expandRefs(osm, doc.refs || [], function (err, coords) {
       if (err) return cb(err)
-      var type = isPolygon(coords, doc.tags) ? 'Polygon' : 'LineString'
+      var type = isPolygon(coords, doc.tags, polygonFeatures) ? 'Polygon' : 'LineString'
       cb(null, {
         type: type,
         coordinates: type === 'LineString' ? coords : [coords]
       })
     })
   } else if (doc.type === 'relation') {
-    expandMembers(osm, doc.members || [], function (err, geoms) {
-      // TODO: Relations need to be processed as MultiPolygons / MultiLineStrings / MultiPoints
-      cb(err, {
-        type: 'GeometryCollection',
-        geometries: geoms
-      })
+    expandMembers(osm, doc.members || [], polygonFeatures, function (err, geoms) {
+      if (err) return cb(err)
+      var result = assembleGeometries(geoms)
+      cb(null, result)
     })
   } else cb(null, undefined)
+}
+
+// Takes a list of GeoJSON objects and returns a single GeoJSON object
+// containing them. Applies dissolving of (Multi)LineStrings and
+// (Multi)Polygons where ever possible.
+// [GeoJSON] -> GeoJSON
+function assembleGeometries (geoms) {
+  var types = geometriesByType(geoms)
+
+  var numTypes = Object.keys(types).length
+  if (numTypes === 0) {
+    return {}
+  }
+
+  var dissolvableTypes = [
+    'LineString',
+    'MultiLineString',
+    'Polygon',
+    'MultiPolygon'
+  ]
+
+  var type = Object.keys(types)[0]
+  if (numTypes === 1 && dissolvableTypes.indexOf(type) !== -1) {
+    geoms = geoms.map(rewindFixed)
+
+    var errors = geoms.reduce(function (accum, geom) {
+      var errs = geoJsonHints(geom)
+      if (errs.length > 0) return accum.concat(errs)
+      else return accum
+    }, [])
+    if (errors.length > 0) {
+      // skip
+      return {}
+    }
+
+    return dissolve(types[type])
+  }
+
+  // Heterogeneous data; use a GeometryCollection
+  return {
+    type: 'GeometryCollection',
+    geometries: geoms
+  }
 }
 
 function expandRefs (osm, refs, cb) {
@@ -112,9 +213,8 @@ function expandRefs (osm, refs, cb) {
     pending++
     osm.get(ref, function (err, docs) {
       if (err) return cb(err)
-      if (docs && Object.keys(docs).length) {
-        var doc = mostRecentFork(docs) // for now
-        if (!doc) return cb(new Error('Missing ref #' + ref))
+      var doc = mostRecentFork(docs || []) // for now
+      if (doc) {
         coords[ix] = [+doc.lon, +doc.lat]
       }
       if (--pending === 0) done()
@@ -127,7 +227,7 @@ function expandRefs (osm, refs, cb) {
   }
 }
 
-function expandMembers (osm, members, cb) {
+function expandMembers (osm, members, polygonFeatures, cb) {
   cb = once(cb)
   var pending = 1
   var geoms = Array(members.length)
@@ -135,9 +235,9 @@ function expandMembers (osm, members, cb) {
     pending++
     osm.get(member.ref, function (err, docs) {
       if (err) return cb(err)
-      if (docs) {
-        var doc = mostRecentFork(docs) // for now
-        geom(osm, doc, function (err, geometry) {
+      var doc = mostRecentFork(docs || []) // for now
+      if (doc) {
+        geom(osm, doc, polygonFeatures, function (err, geometry) {
           if (err) return cb(err)
           geoms[ix] = geometry
           if (--pending === 0) cb(null, geoms)
@@ -148,8 +248,11 @@ function expandMembers (osm, members, cb) {
   if (--pending === 0) cb(null, geoms)
 }
 
+// [OsmDocument] -> OsmDocument|null
 function mostRecentFork (docs) {
-  return Object.keys(docs).map(key => docs[key]).sort(cmpFork)[0]
+  var results = Object.keys(docs).map(key => docs[key]).sort(cmpFork)
+  results = results.filter(function (doc) { return !doc.deleted })
+  return results[0]
 }
 
 /**
@@ -162,4 +265,26 @@ function cmpFork (a, b) {
   }
   // Ensure sorting is stable between requests
   return a.version < b.version ? -1 : 1
+}
+
+// [GeoJson] -> {String: [GeoJson]}
+function geometriesByType (geoms) {
+  var types = {}
+  geoms.forEach(function (geom) {
+    if (!types[geom.type]) {
+      types[geom.type] = []
+    }
+    types[geom.type].push(geom)
+  })
+  return types
+}
+
+// Handles GeometryCollections until https://github.com/mapbox/geojson-rewind/pull/14 lands
+function rewindFixed (gj) {
+  if (gj && gj.type === 'GeometryCollection') {
+    gj.geometries = gj.geometries.map(function (g) { return rewind(g) })
+    return gj
+  } else {
+    return rewind(gj)
+  }
 }

@@ -25,7 +25,7 @@ module.exports.obj = function (osm, opts, cb) {
     cb = opts
     opts = null
   }
-  getGeoJSON(osm, xtend({objectMode: true, highWaterMark: 16}, opts), cb)
+  return getGeoJSON(osm, xtend({objectMode: true, highWaterMark: 16}, opts), cb)
 }
 
 function getGeoJSON (osm, opts, cb) {

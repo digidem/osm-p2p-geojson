@@ -145,7 +145,7 @@ function geom (osm, doc, polygonFeatures, cb) {
       coordinates: [ +doc.lon, +doc.lat ]
     })
   } else if (doc.type === 'way') {
-    expandRefs(osm, doc.refs || [], function (err, coords) {
+    expandRefs(osm, doc.refs || doc.nodes || [], function (err, coords) {
       if (err) return cb(err)
       var type = isPolygon(coords, doc.tags, polygonFeatures) ? 'Polygon' : 'LineString'
       cb(null, {

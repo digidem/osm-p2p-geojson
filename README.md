@@ -19,21 +19,39 @@ npm install osm-p2p-geojson
 ## Usage
 
 ```js
-// streaming:
+var Osm = require('osm-p2p-mem')
 var getGeoJSON = require('osm-p2p-geojson')
-var geo = getGeoJSON(osm)
-var q = osm.queryStream([[-Infinity, Infinity], [-Infinity, Infinity]])
 
-// outputs geojson object
-q.pipe(geo).pipe(process.stdout)
+var osm = Osm()
 
-// or as callbacks:
-osm.query([[-Infinity, Infinity], [-Infinity, Infinity]], function (err, docs) {
-  getGeoJSON(osm, { docs: docs }, function (err, geojson) {
-    console.log(geojson)
-    // outputs geojson object
-  })
+osm.create({
+  type: 'node',
+  lat: 1,
+  lon: -1,
+  tags: {
+    foo: 'bar'
+  }
+}, function (err) {
+  queryStreaming()
+  queryCallback()
 })
+
+function queryStreaming () {
+  var q = osm.queryStream([[-Infinity, Infinity], [-Infinity, Infinity]])
+  var geo = getGeoJSON(osm)
+
+  q.pipe(geo)
+
+  geo.on('data', console.log)
+}
+
+function queryCallback () {
+  osm.query([[-Infinity, Infinity], [-Infinity, Infinity]], function (err, docs) {
+    getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+      console.log(geojson)
+    })
+  })
+}
 ```
 
 ## API
@@ -60,6 +78,10 @@ for reading output, you can pass `callback(err, geojson)`.
 resultant object stream will emit GeoJSON `Feature` objects. This is not valid
 GeoJSON as-is: the recipient of the stream will need to either wrap these
 `Feature`s into a `FeatureCollection` or otherwise further transform them.
+
+**N.B.**: Only "interesting" elements are exported. An interesting element is
+defined as an element that is both a) not malformed, and b) has a populated
+"tags" object set on it.
 
 ## Contribute
 

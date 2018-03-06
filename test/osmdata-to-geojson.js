@@ -1,11 +1,7 @@
-var tmpdir = require('os').tmpdir()
 var osmdb = require('osm-p2p-db')
 var memdb = require('memdb')
 var hyperlog = require('hyperlog')
-var path = require('path')
-var rimraf = require('rimraf')
-var mkdirp = require('mkdirp')
-var fdstore = require('fd-chunk-store')
+var memstore = require('memory-chunk-store')
 var traverse = require('traverse')
 var xtend = require('xtend')
 var through = require('through2')
@@ -16,13 +12,10 @@ var concat = require('concat-stream')
 var getGeoJSON = require('../')
 
 function db () {
-  var dir = path.join(tmpdir, 'osm-p2p-geojson-test-' + Math.random())
-  rimraf.sync(dir)
-  mkdirp.sync(dir)
   return osmdb({
     db: memdb(),
     log: hyperlog(memdb(), { valueEncoding: 'json' }),
-    store: fdstore(4096, path.join(dir, 'kdb'))
+    store: memstore(4096)
   })
 }
 

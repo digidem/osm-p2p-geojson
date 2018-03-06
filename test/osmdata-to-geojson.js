@@ -8,14 +8,26 @@ var through = require('through2')
 var clone = require('clone')
 var from = require('from2')
 var concat = require('concat-stream')
+var hyperOsm = require('hyperdb-osm')
+var hyperdb = require('hyperdb')
+var ram = require('random-access-memory')
+var grid = require('grid-point-store')
 
 var getGeoJSON = require('../')
 
-function db () {
+function osmp2p () {
   return osmdb({
     db: memdb(),
     log: hyperlog(memdb(), { valueEncoding: 'json' }),
     store: memstore(4096)
+  })
+}
+
+function hyperosm () {
+  return hyperOsm({
+    db: hyperdb(ram, { valueEncoding: 'json' }),
+    index: memdb(),
+    pointstore: grid({ store: memdb(), zoomLevel: 7 })
   })
 }
 
@@ -24,9 +36,10 @@ function json2batch (e) {
   var op = {
     type: 'put',
     key: e.id,
+    id: e.id,
     value: e
   }
-  e.refs = e.nodes
+  if (e.nodes) e.refs = e.nodes
   delete e.id
   delete e.nodes
   return op
@@ -45,15 +58,32 @@ function clearProperty (property, geojson) {
 }
 
 // [OsmObject] -> Error, GeoJSON <Async>
-module.exports = function osmDataToGeoJson (data, opts, done) {
-  if (opts && !done) {
-    done = opts
+module.exports = function osmDataToGeoJson (data, opts, cb) {
+  if (opts && !cb) {
+    cb = opts
     opts = {}
   }
 
+  var pending = 1
+  run(osmp2p(), data, opts, cb)
+  run(hyperosm(), data, opts, cb)
+
+  var error
+  var json
+  function done (err, theJson) {
+    if (err) error = err
+
+    if (theJson && !json) json = theJson
+
+    if (!--pending) {
+      cb(error)
+    }
+  }
+}
+
+function run (osm, data, opts, done) {
   var batch = data.map(json2batch)
 
-  var osm = db()
   osm.batch(batch, function (err, docs) {
     if (err) return done(err)
     var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
@@ -73,7 +103,7 @@ module.exports.getQueryStream = function (data, opts) {
   var batch = data.map(json2batch)
   var t = through.obj()
 
-  var osm = db()
+  var osm = osmp2p()
   t.osm = osm
   osm.batch(batch, function (err, docs) {
     if (err) return done(err)

@@ -5,6 +5,8 @@ var getGeoJSON = require('../')
 var collect = require('collect-stream')
 
 test('node', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'node',
@@ -36,11 +38,12 @@ test('node', function (t) {
   osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('way', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'way',
@@ -93,12 +96,13 @@ test('way', function (t) {
   osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 
 test('way (streaming)', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'way',
@@ -171,12 +175,13 @@ test('way (streaming)', function (t) {
         features: geojson
       }
       t.deepEqual(geojson, expected)
-      t.end()
     })
   }
 })
 
 test('polygon', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'way',
@@ -235,11 +240,12 @@ test('polygon', function (t) {
   osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('opts.map', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'node',
@@ -278,11 +284,12 @@ test('opts.map', function (t) {
   osmDataToGeoJson(batch, { map: mapFn }, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('invalid polygon', function (t) {
+  t.plan(4)
+
   var batch = [
     {
       type: 'way',
@@ -325,7 +332,6 @@ test('invalid polygon', function (t) {
   osmDataToGeoJson(batch, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 

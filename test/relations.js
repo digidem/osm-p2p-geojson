@@ -3,6 +3,8 @@ var test = require('tape')
 var osmDataToGeoJson = require('./osmdata-to-geojson')
 
 test('single way -> LineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -30,7 +32,8 @@ test('single way -> LineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '3'
+          ref: '3',
+          id: '3'
         }
       ]
     }
@@ -58,11 +61,12 @@ test('single way -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two disconnected ways -> MultiLineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -107,11 +111,13 @@ test('two disconnected ways -> MultiLineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         },
         {
           type: 'way',
-          ref: '6'
+          ref: '6',
+          id: '6'
         }
       ]
     }
@@ -145,11 +151,12 @@ test('two disconnected ways -> MultiLineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two connected ways -> LineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -188,11 +195,13 @@ test('two connected ways -> LineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '4'
+          ref: '4',
+          id: '4'
         },
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         }
       ]
     }
@@ -221,11 +230,12 @@ test('two connected ways -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two connected ways -> LineString (opposite order)', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -264,11 +274,13 @@ test('two connected ways -> LineString (opposite order)', function (t) {
       members: [
         {
           type: 'way',
-          ref: '4'
+          ref: '4',
+          id: '4'
         },
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         }
       ]
     }
@@ -297,11 +309,12 @@ test('two connected ways -> LineString (opposite order)', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two connected ways /w heads touching -> LineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -340,11 +353,13 @@ test('two connected ways /w heads touching -> LineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '4'
+          ref: '4',
+          id: '4'
         },
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         }
       ]
     }
@@ -373,11 +388,12 @@ test('two connected ways /w heads touching -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two connected ways /w tails touching -> LineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -416,11 +432,13 @@ test('two connected ways /w tails touching -> LineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '4'
+          ref: '4',
+          id: '4'
         },
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         }
       ]
     }
@@ -449,11 +467,12 @@ test('two connected ways /w tails touching -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('three connected ways -> LineString', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -503,15 +522,18 @@ test('three connected ways -> LineString', function (t) {
       members: [
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         },
         {
           type: 'way',
-          ref: '6'
+          ref: '6',
+          id: '6'
         },
         {
           type: 'way',
-          ref: '7'
+          ref: '7',
+          id: '7'
         }
       ]
     }
@@ -541,11 +563,12 @@ test('three connected ways -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two ways -> MultiLineString /w two LineStrings', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -590,11 +613,13 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
       members: [
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         },
         {
           type: 'way',
-          ref: '6'
+          ref: '6',
+          id: '6'
         }
       ]
     }
@@ -628,11 +653,12 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('four ways -> MultiLineString /w two LineStrings', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -699,19 +725,23 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
       members: [
         {
           type: 'way',
-          ref: '7'
+          ref: '7',
+          id: '7'
         },
         {
           type: 'way',
-          ref: '8'
+          ref: '8',
+          id: '8'
         },
         {
           type: 'way',
-          ref: '9'
+          ref: '9',
+          id: '9'
         },
         {
           type: 'way',
-          ref: '10'
+          ref: '10',
+          id: '10'
         }
       ]
     }
@@ -747,11 +777,12 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('many long ways -> LineString', function (t) {
+  t.plan(4)
+
   var _id = 1
   function id () {
     return '' + (_id++)
@@ -788,7 +819,8 @@ test('many long ways -> LineString', function (t) {
     members: ways.map(function (way) {
       return {
         type: 'way',
-        ref: way.id
+        ref: way.id,
+        id: way.id
       }
     })
   }
@@ -817,11 +849,12 @@ test('many long ways -> LineString', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })
 
 test('two connected ways (diamond shape) -> Polygon', function (t) {
+  t.plan(4)
+
   var data = [
     {
       type: 'node',
@@ -872,11 +905,13 @@ test('two connected ways (diamond shape) -> Polygon', function (t) {
       members: [
         {
           type: 'way',
-          ref: '5'
+          ref: '5',
+          id: '5'
         },
         {
           type: 'way',
-          ref: '6'
+          ref: '6',
+          id: '6'
         }
       ]
     }
@@ -911,6 +946,5 @@ test('two connected ways (diamond shape) -> Polygon', function (t) {
   osmDataToGeoJson(data, function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
-    t.end()
   })
 })

@@ -108,11 +108,8 @@ function hasAnInterestingParent (osm, id, done) {
 
     amap(docVersions, 3, version2doc, completed)
 
-    function version2doc (id, done) {
-      osm.log.get(id, function (err, node) {
-        if (err) return done(err)
-        done(null, node.value.v || {})
-      })
+    function version2doc (version, done) {
+      osm.getByVersion(version, done)
     }
 
     function completed (err, docs) {
@@ -130,9 +127,9 @@ function hasAnInterestingParent (osm, id, done) {
 // given ID.
 // OsmDb, ID -> [VersionID] <Async>
 function getContainingDocIds (osm, ref, done) {
-  osm.refs.list(ref, function (err, rows) {
+  osm.getReferrers(ref, function (err, rows) {
     if (err) done(err)
-    var docVersions = rows.map(function (row) { return row.key })
+    var docVersions = rows.map(function (row) { return row.version })
     done(null, docVersions)
   })
 }

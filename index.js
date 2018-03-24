@@ -9,6 +9,7 @@ var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
 var geoJsonHints = require('geojsonhint').hint
 
+var Importer = require('./lib/importer.js')
 var FCStream = require('./lib/geojson_fc_stream')
 var isPolygon = require('./lib/is_polygon_feature')
 var hasInterestingTags = require('./lib/has_interesting_tags')
@@ -19,6 +20,7 @@ var DEFAULTS = {
 }
 
 module.exports = getGeoJSON
+module.exports.importer = Importer
 
 module.exports.obj = function (osm, opts, cb) {
   if (typeof opts === 'function') {

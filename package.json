@@ -1,7 +1,7 @@
 {
   "name": "osm-p2p-geojson",
   "version": "3.0.4",
-  "description": "Export GeoJSON from osm-p2p-db",
+  "description": "Export and Import GeoJSON from osm-p2p-db",
   "main": "index.js",
   "scripts": {
     "test": "tape 'test/**/*.js'"
@@ -41,11 +41,13 @@
     "geojson-polygons-equal": "0.0.1",
     "geojson-rewind": "^0.2.0",
     "geojsonhint": "^2.0.0",
+    "inherits": "^2.0.3",
     "map-limit": "0.0.1",
     "once": "^1.3.3",
     "osm-polygon-features": "^0.9.1",
     "pump": "^1.0.1",
     "pumpify": "^1.3.5",
+    "randombytes": "^2.0.6",
     "read-only-stream": "^2.0.0",
     "through2": "^2.0.1",
     "xtend": "^4.0.1"

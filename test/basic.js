@@ -1,7 +1,6 @@
 var test = require('tape')
 
 var osmDataToGeoJson = require('./osmdata-to-geojson')
-var getGeoJSON = require('../')
 var collect = require('collect-stream')
 
 test('node', function (t) {
@@ -334,4 +333,3 @@ test('invalid polygon', function (t) {
     t.deepEqual(geojson, expected)
   })
 })
-

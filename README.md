@@ -20,7 +20,7 @@ npm install osm-p2p-geojson
 
 ```js
 var Osm = require('osm-p2p-mem')
-var getGeoJSON = require('osm-p2p-geojson')
+var osmGeoJson = require('osm-p2p-geojson')
 
 var osm = Osm()
 
@@ -38,7 +38,7 @@ osm.create({
 
 function queryStreaming () {
   var q = osm.queryStream([[-Infinity, Infinity], [-Infinity, Infinity]])
-  var geo = getGeoJSON(osm)
+  var geo = osmGeoJson(osm)
 
   q.pipe(geo)
 
@@ -47,7 +47,7 @@ function queryStreaming () {
 
 function queryCallback () {
   osm.query([[-Infinity, Infinity], [-Infinity, Infinity]], function (err, docs) {
-    getGeoJSON(osm, { docs: docs }, function (err, geojson) {
+    osmGeoJson(osm, { docs: docs }, function (err, geojson) {
       console.log(geojson)
     })
   })
@@ -57,10 +57,24 @@ function queryCallback () {
 ## API
 
 ```js
-var getGeoJSON = require('osm-p2p-geojson')
+var osmGeoJson = require('osm-p2p-geojson')
 ```
 
-### var stream = getGeoJSON(osm[, options][, callback])
+### var importer = osmGeoJson.importer(osm)
+
+Create an importer for importing GeoJSON objects into the given osm-p2p database. Can track progress through listening to the 'import' event. This event gives you the index of the most recently imported data and how many documents will be imported in total. If you try to import twice with the same importer, the callback will be called with an error.
+
+If you want to import twice, create another importer.
+
+```js
+var importer = osmGeoJson.importer(osm)
+importer.on('import', function (index, total) {
+  console.log('import', index, total)
+})
+importer.importFeatureCollection(geojson, onDone)
+```
+
+### var stream = osmGeoJson(osm[, options][, callback])
 
 Creates a TransformStream that will take as input a stream of osm-p2p documents
 and outputs a stream of GeoJSON. If you prefer a callback rather than a stream
@@ -70,7 +84,7 @@ for reading output, you can pass `callback(err, geojson)`.
 - `docs` - a list of OSM documents. If not provided here, they must be written
   to the returned `stream`.
 - `options.metadata` - Array of metadata properties to include as GeoJSON properties. Defaults to `['id', 'version', 'timestamp']`
-- `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `getGeoJSON.obj()`
+- `options.objectMode` - when `true` will return a stream of GeoJSON feature objects instead of stringified JSON. Default `false`. You can also use `osmGeoJson.obj()`
 - `options.map` - a function that maps a `Feature` to another `Feature`. Defaults to the no-op `function mapFn (feature) { return feature }`
 - `options.polygonFeatures` - _either_ a list of tag keys and values that are polygons (for schema see https://github.com/tyrasd/osm-polygon-features/blob/master/schema.json) _or_ a function that will be called with two arguments: `coordinates` (from the GeoJSON geometry) and `tags` (a hash of tag key-value pairs) and should return `true` for polygons.
 

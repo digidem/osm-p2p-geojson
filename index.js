@@ -7,7 +7,7 @@ var collect = require('collect-stream')
 var from = require('from2')
 var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
-var geoJsonHints = require('geojsonhint').hint
+var geoJsonHints = require('@mapbox/geojsonhint').hint
 
 var Importer = require('./lib/importer.js')
 var FCStream = require('./lib/geojson_fc_stream')

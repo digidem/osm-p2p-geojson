@@ -3,7 +3,7 @@ var test = require('tape')
 var osmDataToGeoJson = require('./osmdata-to-geojson')
 
 test('single way -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -65,7 +65,7 @@ test('single way -> LineString', function (t) {
 })
 
 test('two disconnected ways -> MultiLineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -155,7 +155,7 @@ test('two disconnected ways -> MultiLineString', function (t) {
 })
 
 test('two connected ways -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -234,7 +234,7 @@ test('two connected ways -> LineString', function (t) {
 })
 
 test('two connected ways -> LineString (opposite order)', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -313,7 +313,7 @@ test('two connected ways -> LineString (opposite order)', function (t) {
 })
 
 test('two connected ways /w heads touching -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -392,7 +392,7 @@ test('two connected ways /w heads touching -> LineString', function (t) {
 })
 
 test('two connected ways /w tails touching -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -471,7 +471,7 @@ test('two connected ways /w tails touching -> LineString', function (t) {
 })
 
 test('three connected ways -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -567,7 +567,7 @@ test('three connected ways -> LineString', function (t) {
 })
 
 test('two ways -> MultiLineString /w two LineStrings', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -657,7 +657,7 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
 })
 
 test('four ways -> MultiLineString /w two LineStrings', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {
@@ -781,7 +781,7 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
 })
 
 test('many long ways -> LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var _id = 1
   function id () {
@@ -853,7 +853,7 @@ test('many long ways -> LineString', function (t) {
 })
 
 test('two connected ways (diamond shape) -> Polygon', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var data = [
     {

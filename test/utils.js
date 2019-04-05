@@ -1,32 +1,28 @@
-var osmdb = require('osm-p2p-db')
+var kappa = require('kappa-core')
+var Osm = require('kappa-osm')
+var raf = require('random-access-file')
+var level = require('level')
+var tmp = require('os').tmpdir()
+var path = require('path')
 var from = require('from2')
 var traverse = require('traverse')
-var memdb = require('memdb')
-var hyperlog = require('hyperlog')
-var memstore = require('memory-chunk-store')
-var hyperOsm = require('hyperdb-osm')
-var hyperdb = require('hyperdb')
-var ram = require('random-access-memory')
-var grid = require('grid-point-store')
+var mkdirp = require('mkdirp')
+
+function createDb () {
+  var dir = path.join(tmp, 'kappa-osm-' + String(Math.random()).substring(10))
+  mkdirp.sync(dir)
+  mkdirp.sync(path.join(dir, 'storage'))
+  var kstorage = function (name) { return raf(path.join(dir, 'kappa', name)) }
+  var core = kappa(kstorage, { valueEncoding: 'json' })
+  return Osm({
+    core: core,
+    index: level(dir),
+    storage: function (name, cb) { cb(null, raf(path.join(dir, 'storage', name))) }
+  })
+}
 
 module.exports = {
-  osmp2p, hyperosm, clearProperty, fromString
-}
-
-function osmp2p () {
-  return osmdb({
-    db: memdb(),
-    log: hyperlog(memdb(), { valueEncoding: 'json' }),
-    store: memstore(4096)
-  })
-}
-
-function hyperosm () {
-  return hyperOsm({
-    db: hyperdb(ram, { valueEncoding: 'json' }),
-    index: memdb(),
-    pointstore: grid({ store: memdb(), zoomLevel: 7 })
-  })
+  createDb, clearProperty, fromString
 }
 
 // String, GeoJSON -> GeoJSON

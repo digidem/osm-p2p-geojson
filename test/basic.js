@@ -4,7 +4,7 @@ var osmDataToGeoJson = require('./osmdata-to-geojson')
 var collect = require('collect-stream')
 
 test('node', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var batch = [
     {
@@ -41,7 +41,7 @@ test('node', function (t) {
 })
 
 test('way', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var batch = [
     {
@@ -179,7 +179,7 @@ test('way (streaming)', function (t) {
 })
 
 test('polygon', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var batch = [
     {
@@ -243,7 +243,7 @@ test('polygon', function (t) {
 })
 
 test('opts.map', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var batch = [
     {
@@ -287,7 +287,7 @@ test('opts.map', function (t) {
 })
 
 test('invalid polygon', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var batch = [
     {

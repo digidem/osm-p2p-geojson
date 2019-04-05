@@ -7,8 +7,7 @@ module.exports = function (data, opts, cb) {
     opts = {}
   }
 
-  run(utils.osmp2p(), data, opts, cb)
-  run(utils.hyperosm(), data, opts, cb)
+  run(utils.createDb(), data, opts, cb)
 }
 
 function run (osm, data, opts, cb) {
@@ -18,7 +17,7 @@ function run (osm, data, opts, cb) {
   })
   importer.importFeatureCollection(data, function done (err) {
     if (err) return cb(err)
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    var bbox = [-Infinity, -Infinity,  Infinity, Infinity]
     osm.query(bbox, function (err, docs) {
       if (err) return cb(err)
       docs = utils.clearProperty('version', docs)

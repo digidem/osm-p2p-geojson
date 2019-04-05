@@ -223,7 +223,7 @@ test('Polygon', function (t) {
   })
 })
 
-test.only('importing twice', function (t) {
+test('importing twice', function (t) {
   var feature = {
     type: 'Feature',
     properties: {

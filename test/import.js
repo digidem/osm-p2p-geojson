@@ -3,10 +3,22 @@ var test = require('tape')
 var utils = require('./utils')
 var osmGeoJson = require('..')
 var geoJsonToOsmData = require('./geojson-to-osmdata')
-var compare = function (a, b) { return a.lat - b.lat }
+
+function elmToValue (a) {
+  if (a.type === 'node') return 1
+  else if (a.type === 'way') return 2
+  else if (a.type === 'relation') return 3
+  else return 4
+}
+function compare (a, b) {
+  var aval = elmToValue(a)
+  var bval = elmToValue(b)
+  if (aval !== bval) return aval - bval
+  else return Number(a.lat) - Number(b.lat)
+}
 
 test('Point', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var expected = [
     {
@@ -16,7 +28,8 @@ test('Point', function (t) {
       lon: 4.321,
       tags: {
         interesting: 'this is'
-      }
+      },
+      links: []
     }
   ]
 
@@ -48,7 +61,7 @@ test('Point', function (t) {
 })
 
 test('LineString', function (t) {
-  t.plan(4)
+  t.plan(2)
 
   var expected = [
     {
@@ -56,25 +69,29 @@ test('LineString', function (t) {
       changeset: '2',
       tags: {
         interesting: 'this is'
-      }
+      },
+      links: []
     },
     {
       type: 'node',
       changeset: '2',
       lat: 0.0,
-      lon: 1.0
+      lon: 1.0,
+      links: []
     },
     {
       type: 'node',
       changeset: '2',
       lat: 1.0,
-      lon: 1.1
+      lon: 1.1,
+      links: []
     },
     {
       type: 'node',
       changeset: '2',
       lat: 2.1,
-      lon: 1.2
+      lon: 1.2,
+      links: []
     }
   ]
 
@@ -112,50 +129,57 @@ test('LineString', function (t) {
 })
 
 test('Polygon', function (t) {
-  t.plan(8)
+  t.plan(4)
 
   var nodes = [
     {
       type: 'way',
       changeset: '4',
-      tags: {area: 'yes'}
+      tags: {area: 'yes'},
+      links: []
     },
     {
       type: 'node',
       changeset: '4',
       lat: 0.0,
-      lon: 2
+      lon: 2,
+      links: []
     },
     {
       type: 'node',
       changeset: '4',
       lat: 0.1,
-      lon: 0.0
+      lon: 0.0,
+      links: []
     },
     {
       type: 'node',
       changeset: '4',
       lat: 0.1,
-      lon: 0.0
+      lon: 0.0,
+      links: []
     },
     {
       type: 'node',
       changeset: '4',
       lat: 1.0,
-      lon: 3.0
+      lon: 3.0,
+      links: []
     },
     {
       type: 'node',
       changeset: '4',
       lat: 1.5,
-      lon: 5.0
+      lon: 5.0,
+      links: []
     },
     {
       type: 'relation',
       changeset: '4',
       tags: {
         interesting: 'this is'
-      }
+      },
+      links: []
     }
   ]
 
@@ -199,7 +223,7 @@ test('Polygon', function (t) {
   })
 })
 
-test('importing twice', function (t) {
+test.only('importing twice', function (t) {
   var feature = {
     type: 'Feature',
     properties: {
@@ -234,8 +258,7 @@ test('importing twice', function (t) {
     changeset: 'A',
     features: features
   }
-  importTwice(utils.osmp2p(), geojson, done)
-  // importTwice(utils.hyperosm())
+  importTwice(utils.createDb(), geojson, done)
 })
 
 function importTwice (osm, geojson, done) {

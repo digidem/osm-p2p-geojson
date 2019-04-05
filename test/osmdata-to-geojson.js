@@ -27,8 +27,7 @@ module.exports = function osmDataToGeoJson (data, opts, cb) {
     opts = {}
   }
 
-  run(utils.osmp2p(), data, opts, cb)
-  run(utils.hyperosm(), data, opts, cb)
+  run(utils.createDb(), data, opts, cb)
 }
 
 function run (osm, data, opts, done) {
@@ -36,7 +35,7 @@ function run (osm, data, opts, done) {
 
   osm.batch(batch, function (err, docs) {
     if (err) return done(err)
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
+    var bbox = [-Infinity, -Infinity, Infinity, Infinity]
     osm.query(bbox, function (err, docs) {
       if (err) return done(err)
       getGeoJSON(osm, xtend(opts, { docs: docs }), function (err, json) {
@@ -53,12 +52,12 @@ module.exports.getQueryStream = function (data, opts, done) {
   var batch = data.map(json2batch)
   var t = through.obj()
 
-  var osm = utils.osmp2p()
+  var osm = utils.createDb()
   t.osm = osm
   osm.batch(batch, function (err, docs) {
     if (err) return done(err)
-    var bbox = [[-Infinity, Infinity], [-Infinity, Infinity]]
-    var q = osm.queryStream(bbox)
+    var bbox = [-Infinity, -Infinity, Infinity, Infinity]
+    var q = osm.query(bbox)
     var s = getGeoJSON(osm, opts)
 
     if (opts && opts.objectMode) {

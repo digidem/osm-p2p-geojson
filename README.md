@@ -1,6 +1,6 @@
 # osm-p2p-geojson
 
-> Transform OSM documents in an osm-p2p-db to GeoJSON
+> Transform OSM documents in a kappa-osm database to GeoJSON
 
 ## Table of Contents
 
@@ -19,10 +19,17 @@ npm install osm-p2p-geojson
 ## Usage
 
 ```js
-var Osm = require('osm-p2p-mem')
+var core = require('kappa-core')
+var osmdb = require('kappa-osm')
+var ram = require('random-access-memory')
+var memdb = require('memdb')
 var osmGeoJson = require('osm-p2p-geojson')
 
-var osm = Osm()
+var osm = osmdb({
+  core: core,
+  index: memdb(),
+  storage: function (name, cb) { cb(null, ram()) }
+})
 
 osm.create({
   type: 'node',
@@ -80,7 +87,7 @@ Creates a TransformStream that will take as input a stream of osm-p2p documents
 and outputs a stream of GeoJSON. If you prefer a callback rather than a stream
 for reading output, you can pass `callback(err, geojson)`.
 
-- `osm` - a [`osm-p2p-db`](https://github.com/digidem/osm-p2p-db)
+- `osm` - a [`kappa-osm`](https://github.com/digidem/kappa-osm)
 - `docs` - a list of OSM documents. If not provided here, they must be written
   to the returned `stream`.
 - `options.metadata` - Array of metadata properties to include as GeoJSON properties. Defaults to `['id', 'version', 'timestamp']`

@@ -129,7 +129,7 @@ function hasAnInterestingParent (osm, id, done) {
 // given ID.
 // OsmDb, ID -> [VersionID] <Async>
 function getContainingDocIds (osm, ref, done) {
-  osm.getReferrers(ref, function (err, rows) {
+  osm.refs(ref, function (err, rows) {
     if (err) done(err)
     var docVersions = rows.map(function (row) { return row.version })
     done(null, docVersions)
@@ -287,3 +287,4 @@ function rewindFixed (gj) {
     return rewind(gj)
   }
 }
+

@@ -1,11 +1,12 @@
 var test = require('tape')
+var data = require('./data')
 
 var osmDataToGeoJson = require('./osmdata-to-geojson')
 
 test('single way -> LineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -58,7 +59,7 @@ test('single way -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -67,7 +68,7 @@ test('single way -> LineString', function (t) {
 test('two disconnected ways -> MultiLineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -148,7 +149,7 @@ test('two disconnected ways -> MultiLineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -157,7 +158,7 @@ test('two disconnected ways -> MultiLineString', function (t) {
 test('two connected ways -> LineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -227,7 +228,7 @@ test('two connected ways -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -236,7 +237,7 @@ test('two connected ways -> LineString', function (t) {
 test('two connected ways -> LineString (opposite order)', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -306,7 +307,7 @@ test('two connected ways -> LineString (opposite order)', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -315,7 +316,7 @@ test('two connected ways -> LineString (opposite order)', function (t) {
 test('two connected ways /w heads touching -> LineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -385,7 +386,7 @@ test('two connected ways /w heads touching -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -394,7 +395,7 @@ test('two connected ways /w heads touching -> LineString', function (t) {
 test('two connected ways /w tails touching -> LineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -464,7 +465,7 @@ test('two connected ways /w tails touching -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -473,7 +474,7 @@ test('two connected ways /w tails touching -> LineString', function (t) {
 test('three connected ways -> LineString', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -560,7 +561,7 @@ test('three connected ways -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -569,7 +570,7 @@ test('three connected ways -> LineString', function (t) {
 test('two ways -> MultiLineString /w two LineStrings', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -650,7 +651,7 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -659,7 +660,7 @@ test('two ways -> MultiLineString /w two LineStrings', function (t) {
 test('four ways -> MultiLineString /w two LineStrings', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -774,7 +775,7 @@ test('four ways -> MultiLineString /w two LineStrings', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -826,7 +827,7 @@ test('many long ways -> LineString', function (t) {
   }
 
   // glom it all into a single data array
-  var data = nodes.concat(ways).concat([relation])
+  var batch = nodes.concat(ways).concat([relation])
 
   var expected = {
     type: 'FeatureCollection',
@@ -846,7 +847,7 @@ test('many long ways -> LineString', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })
@@ -855,7 +856,7 @@ test('many long ways -> LineString', function (t) {
 test('two connected ways (diamond shape) -> Polygon', function (t) {
   t.plan(2)
 
-  var data = [
+  var batch = [
     {
       type: 'node',
       id: '1',
@@ -943,7 +944,7 @@ test('two connected ways (diamond shape) -> Polygon', function (t) {
     ]
   }
 
-  osmDataToGeoJson(data, function (err, geojson) {
+  osmDataToGeoJson(data.json2batch(batch), function (err, geojson) {
     t.error(err)
     t.deepEqual(geojson, expected)
   })

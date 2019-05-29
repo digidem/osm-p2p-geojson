@@ -1,24 +1,9 @@
 var xtend = require('xtend')
 var through = require('through2')
-var clone = require('clone')
 var concat = require('concat-stream')
 var utils = require('./utils')
 
 var getGeoJSON = require('../')
-
-function json2batch (e) {
-  e = clone(e)
-  var op = {
-    type: 'put',
-    key: e.id,
-    id: e.id,
-    value: e
-  }
-  if (e.nodes) e.refs = e.nodes
-  delete e.id
-  delete e.nodes
-  return op
-}
 
 // [OsmObject] -> Error, GeoJSON <Async>
 module.exports = function osmDataToGeoJson (data, opts, cb) {
@@ -31,9 +16,7 @@ module.exports = function osmDataToGeoJson (data, opts, cb) {
 }
 
 function run (osm, data, opts, done) {
-  var batch = data.map(json2batch)
-
-  osm.batch(batch, function (err, docs) {
+  osm.batch(data, function (err, docs) {
     if (err) return done(err)
     var bbox = [-Infinity, -Infinity, Infinity, Infinity]
     osm.query(bbox, function (err, docs) {
@@ -49,12 +32,11 @@ function run (osm, data, opts, done) {
 }
 
 module.exports.getQueryStream = function (data, opts, done) {
-  var batch = data.map(json2batch)
   var t = through.obj()
 
   var osm = utils.createDb()
   t.osm = osm
-  osm.batch(batch, function (err, docs) {
+  osm.batch(data, function (err, docs) {
     if (err) return done(err)
     var bbox = [-Infinity, -Infinity, Infinity, Infinity]
     var q = osm.query(bbox)

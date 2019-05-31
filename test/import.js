@@ -135,7 +135,10 @@ test('Polygon', function (t) {
     {
       type: 'way',
       changeset: '4',
-      tags: {area: 'yes'},
+      tags: {
+        area: 'yes',
+        interesting: 'this is'
+      },
       links: []
     },
     {
@@ -171,14 +174,6 @@ test('Polygon', function (t) {
       changeset: '4',
       lat: 1.5,
       lon: 5.0,
-      links: []
-    },
-    {
-      type: 'relation',
-      changeset: '4',
-      tags: {
-        interesting: 'this is'
-      },
       links: []
     }
   ]
@@ -217,7 +212,7 @@ test('Polygon', function (t) {
     var onlyNodes = function (d) { return d.type === 'node' }
     t.deepEqual(docs.filter(onlyNodes).sort(compare), nodes.filter(onlyNodes).sort(compare))
     var onlyRelations = function (d) { return d.type === 'relation' }
-    t.deepEqual(docs.filter(onlyRelations), nodes.filter(onlyRelations))
+    t.deepEqual(docs.filter(onlyRelations), [])
     var onlyWays = function (d) { return d.type === 'way' }
     t.deepEqual(docs.filter(onlyWays), nodes.filter(onlyWays))
   })

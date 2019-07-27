@@ -7,7 +7,7 @@ var collect = require('collect-stream')
 var from = require('from2')
 var amap = require('map-limit')
 var dissolve = require('geojson-dissolve')
-var geoJsonHints = require('@mapbox/geojsonhint').hint
+var GJV = require('geojson-validation')
 
 var Importer = require('./lib/importer.js')
 var FCStream = require('./lib/geojson_fc_stream')
@@ -71,7 +71,7 @@ function getGeoJSON (osm, opts, cb) {
 
       geometry = rewindFixed(geometry)
 
-      var errors = geoJsonHints(geometry)
+      var errors = GJV.valid(geometry)
       if (errors.length > 0) {
         return next()
       }
@@ -185,7 +185,7 @@ function assembleGeometries (geoms) {
     geoms = geoms.map(rewindFixed)
 
     var errors = geoms.reduce(function (accum, geom) {
-      var errs = geoJsonHints(geom)
+      var errs = GJV.valid(geom)
       if (errs.length > 0) return accum.concat(errs)
       else return accum
     }, [])
@@ -287,4 +287,3 @@ function rewindFixed (gj) {
     return rewind(gj)
   }
 }
-

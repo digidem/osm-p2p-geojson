@@ -18,7 +18,7 @@
     "clone": "^2.1.1",
     "concat-stream": "^1.6.0",
     "from2": "^2.3.0",
-    "kappa-core": "^2.6.2",
+    "kappa-core": "^4.0.0",
     "kappa-osm": "^3.0.0",
     "level": "^4.0.0",
     "mkdirp": "^0.5.1",

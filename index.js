@@ -71,8 +71,8 @@ function getGeoJSON (osm, opts, cb) {
 
       geometry = rewindFixed(geometry)
 
-      var errors = GJV.valid(geometry)
-      if (errors.length > 0) {
+      // Skip invalid geometry
+      if (!GJV.valid(geometry)) {
         return next()
       }
 
@@ -184,14 +184,9 @@ function assembleGeometries (geoms) {
   if (numTypes === 1 && dissolvableTypes.indexOf(type) !== -1) {
     geoms = geoms.map(rewindFixed)
 
-    var errors = geoms.reduce(function (accum, geom) {
-      var errs = GJV.valid(geom)
-      if (errs.length > 0) return accum.concat(errs)
-      else return accum
-    }, [])
-    if (errors.length > 0) {
-      // skip
-      return {}
+    // Skip if any of the geometries are invalid GeoJson
+    for (var i = 0; i < geoms.length; i++) {
+      if (!GJV.valid(geoms[i])) return {}
     }
 
     return dissolve(types[type])

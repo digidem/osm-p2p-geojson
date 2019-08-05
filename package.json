@@ -1,6 +1,6 @@
 {
   "name": "osm-p2p-geojson",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Export and Import GeoJSON from osm-p2p-db",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "clone": "^2.1.1",
     "concat-stream": "^1.6.0",
     "from2": "^2.3.0",
-    "kappa-core": "^2.6.2",
+    "kappa-core": "^4.0.0",
     "kappa-osm": "^3.0.0",
     "level": "^4.0.0",
     "mkdirp": "^0.5.1",
@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "JSONStream": "^1.1.4",
-    "clone": "^2.1.0",
     "collect-stream": "^1.1.1",
     "from2": "^2.3.0",
     "geojson-dissolve": "^3.1.0",

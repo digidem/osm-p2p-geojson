@@ -1,9 +1,11 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/). This
-project adheres to [Semantic Versioning](http://semver.org/).
+### [4.0.5](https://github.com/digidem/osm-p2p-geojson/compare/v4.0.2...v4.0.5) (2019-08-12)
+
+### Fixed
+- Replace deprecated `geojsonhint` with `geojson-validation`.
 
 ## 3.0.0 - 2017-04-26
 *Breaking API change and major semver version bump!*
@@ -29,4 +31,3 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.1.0 - 2016-09-03
 ### Added
 - Initial implementation.
-

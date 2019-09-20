@@ -15,7 +15,6 @@
   "author": "Gregor MacLennan",
   "license": "MIT",
   "devDependencies": {
-    "clone": "^2.1.1",
     "concat-stream": "^1.6.0",
     "kappa-core": "^4.0.0",
     "kappa-osm": "^3.0.0",
@@ -29,6 +28,7 @@
     "traverse": "^0.6.6"
   },
   "dependencies": {
+    "clone": "^2.1.1",
     "JSONStream": "^1.1.4",
     "collect-stream": "^1.1.1",
     "from2": "^2.3.0",
